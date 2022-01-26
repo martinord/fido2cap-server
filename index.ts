@@ -279,7 +279,7 @@ app.post('/verify-authentication', (req, res) => {
 if (ENABLE_HTTPS) {
   const host = '127.0.0.1';
   const port = 4443;
-  expectedOrigin = `https://${rpID}`;
+  expectedOrigin = `https://${rpID}:${port}`;
 
   https
     .createServer(
