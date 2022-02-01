@@ -19,9 +19,9 @@ import {
 } from '@simplewebauthn/typescript-types';
 
 import { rpID, expectedOrigin } from './index';
-import { LoggedInUser } from './example-server';
+import { User } from './models/user';
 
-interface LoggedInFIDOUser extends LoggedInUser {
+interface LoggedInFIDOUser extends User {
   currentAuthenticationUserVerification?: UserVerificationRequirement;
 }
 

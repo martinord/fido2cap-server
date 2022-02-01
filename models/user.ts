@@ -1,4 +1,5 @@
 import type { AuthenticatorDevice } from '@simplewebauthn/typescript-types';
+import mongoose from 'mongoose';
 
 /**
  * You'll need a database to store a few things:
@@ -31,9 +32,35 @@ import type { AuthenticatorDevice } from '@simplewebauthn/typescript-types';
  * authenticator credential IDs to pass into `generateAuthenticationOptions()`, from which one is
  * expected to generate an authentication response.
  */
-interface LoggedInUser {
+export class User {
+  
   id: string;
   username: string;
   devices: AuthenticatorDevice[];
-  currentChallenge?: string;
+  currentChallenge?: string; // TODO: MongoDB Schema delete challenge after 6000ms
+  
+  constructor(id : string, username : string) {
+    this.id = id;
+    this.username = username;
+    this.devices = [];
+    this.currentChallenge = '';
+  }
 }
+
+const deviceSchema: mongoose.Schema = new mongoose.Schema({
+  credentialPublicKey: Buffer,
+  credentialID: Buffer,
+  counter: Number,
+  transports: [String],
+});
+
+const userSchema: mongoose.Schema = new mongoose.Schema({
+  id: { type: String, unique: true },
+  username: String,
+  devices: [deviceSchema],
+  currentChallenge: { type: String, default: '', expires: '6000ms'} // TODO: MongoDB Schema delete challenge after 6000ms
+});
+
+export const UserModel = mongoose.model('User', userSchema);
+
+module.exports = { User, UserModel };
