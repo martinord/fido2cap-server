@@ -15,11 +15,13 @@
     "base64url": "^3.0.1",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
+    "express-session": "^1.17.2",
     "mongoose": "^6.1.9",
     "node-fetch": "^2.6.0"
   },
   "devDependencies": {
     "@types/express": "^4.17.13",
+    "@types/express-session": "^1.17.4",
     "@types/node": "^16.7.4",
     "@types/node-fetch": "^2.5.12",
     "nodemon": "^2.0.12",

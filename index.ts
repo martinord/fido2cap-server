@@ -14,6 +14,7 @@ import dotenv from 'dotenv';
 import base64url from 'base64url';
 
 import mongoose from 'mongoose';
+import session from 'express-session';
 
 dotenv.config();
 
@@ -44,9 +45,27 @@ import { User, UserModel } from './models/user';
 
 const app = express();
 
-const { ENABLE_CONFORMANCE, ENABLE_HTTPS } = process.env;
+const { ENABLE_CONFORMANCE, ENABLE_HTTPS, SESSION_KEY } = process.env;
 
 app.use(express.static('./public/'));
+
+/**
+ * Session
+ */
+ declare module "express-session" {
+  interface SessionData {
+    userId: string,
+    challenge: string
+  }
+}
+app.use(session({
+  secret: SESSION_KEY as string,
+  saveUninitialized: true,
+  resave: true,
+  cookie: { secure: true }
+}))
+
+
 app.use(express.json());
 
 /**
@@ -74,9 +93,13 @@ export let expectedOrigin = '';
 /**
  * Database Connection (MongoDB)
  */
-mongoose.connect('mongodb://localhost:27017/mydb').then( function() {
-  console.log('Successfully connected to users database');
-});
+mongoose.connect('mongodb://localhost:27017/mydb', {
+  serverSelectionTimeoutMS: 5000,
+  autoIndex: false,
+  maxPoolSize: 10,
+  socketTimeoutMS: 45000,
+  family: 4
+}).then((db) => console.log("db is connected")).catch((err) => console.log(err));
 
 /**
  * 2FA and Passwordless WebAuthn flows expect you to be able to uniquely identify the user that
@@ -86,13 +109,19 @@ mongoose.connect('mongodb://localhost:27017/mydb').then( function() {
  *
  * Here, the example server assumes the following user has completed login:
  */
-const loggedInUserId = 'internalUserId';
 
-UserModel.createCollection().then( async function() {
-  await UserModel.deleteMany({ id: loggedInUserId }); // delete from previous runs
-  const loggedInUser = new UserModel({ id: loggedInUserId, username: `user@${rpID}`});
-  loggedInUser.save();
-})
+/**
+ * Helper functions
+ */
+function generateRandomUserId(): string {
+  let outString: string = '';
+  const inOptions: string = 'abcdefghijklmnopqrstuvwxyz0123456789';
+
+  for (let i = 0; i < 32; i++) 
+    outString += inOptions.charAt(Math.floor(Math.random() * inOptions.length));
+
+  return outString;
+}
 
 /**
  * Registration (a.k.a. "Registration")
@@ -100,7 +129,18 @@ UserModel.createCollection().then( async function() {
 app.get('/generate-registration-options', async (req, res) => {
   try {
 
-    const user : User = (await UserModel.findOne({id: loggedInUserId}) as unknown) as User;
+    let userId = generateRandomUserId();
+    while(await UserModel.findOne({ id: userId }))
+      userId = generateRandomUserId();
+
+    await UserModel.createCollection();
+    const user_db = new UserModel({ id: userId, username: `user@${rpID}`});
+    const user : User = (await user_db.save() as unknown) as User;
+
+    if(!req.session.userId)
+      req.session.userId = userId;
+
+    // const user : User = (await UserModel.findOne({username: userId}) as unknown) as User;
 
     const opts: GenerateRegistrationOptionsOpts = {
       rpName: 'SimpleWebAuthn Example',
@@ -108,7 +148,7 @@ app.get('/generate-registration-options', async (req, res) => {
       userID: user.id,
       userName: user.username,
       timeout: 60000,
-      attestationType: 'indirect',
+      attestationType: 'direct',
       /**
        * Passing in a user's list of already-registered authenticator IDs here prevents users from
        * registering the same device multiple times. The authenticator will simply throw an error in
@@ -123,10 +163,11 @@ app.get('/generate-registration-options', async (req, res) => {
       /**
        * The optional authenticatorSelection property allows for specifying more constraints around
        * the types of authenticators that users to can use for registration
+       * NOTE: 1st factor authentication (resident keys)
        */
       authenticatorSelection: {
-        userVerification: 'preferred',
-        requireResidentKey: false,
+        userVerification: 'required',
+        residentKey: 'required'
       },
       /**
        * Support the two most common algorithms: ES256, and RS256
@@ -140,7 +181,7 @@ app.get('/generate-registration-options', async (req, res) => {
      * The server needs to temporarily remember this value for verification, so don't lose it until
      * after you verify an authenticator response.
      */
-    await UserModel.updateOne({ id: loggedInUserId }, { $set: { currentChallenge: options.challenge } });
+    req.session.challenge = options.challenge;
 
     res.send(options);
   
@@ -154,8 +195,9 @@ app.post('/verify-registration', async (req, res) => {
 
   try {
 
-    const user : User = (await UserModel.findOne({id: loggedInUserId}) as unknown) as User;
-    const expectedChallenge = user.currentChallenge;
+    const userId = req.session.userId;
+    const expectedChallenge = req.session.challenge;
+    const user : User = (await UserModel.findOne({id: userId}) as unknown) as User;
 
     let verification: VerifiedRegistrationResponse;
     try {
@@ -192,9 +234,10 @@ app.post('/verify-registration', async (req, res) => {
         user.devices.push(newDevice);
       }
 
-      await UserModel.updateOne({ id: loggedInUserId }, { $set: { devices: user.devices } });
+      await UserModel.updateOne({ id: userId }, { $set: { devices: user.devices } });
 
       res.send({ verified });
+      req.session.challenge = "";
     }
   } catch (error) {
     res.status(500).send("User is not registered in the database");
@@ -207,21 +250,16 @@ app.post('/verify-registration', async (req, res) => {
 app.get('/generate-authentication-options', async (req, res) => {
 
   try {
-    // You need to know the user by this point
-    const user : User = (await UserModel.findOne({id: loggedInUserId}) as unknown) as User;
+    // const user : User = (await UserModel.findOne({id: userId}) as unknown) as User;
 
     const opts: GenerateAuthenticationOptionsOpts = {
       timeout: 60000,
-      allowCredentials: user.devices.map(dev => ({
-        id: dev.credentialID,
-        type: 'public-key',
-        transports: dev.transports ?? ['usb', 'ble', 'nfc', 'internal'],
-      })),
+      allowCredentials: [],
       /**
        * This optional value controls whether or not the authenticator needs be able to uniquely
        * identify the user interacting with it (via built-in PIN pad, fingerprint scanner, etc...)
        */
-      userVerification: 'preferred',
+      userVerification: 'required',
       rpID,
     };
   
@@ -231,7 +269,7 @@ app.get('/generate-authentication-options', async (req, res) => {
      * The server needs to temporarily remember this value for verification, so don't lose it until
      * after you verify an authenticator response.
      */
-    await UserModel.updateOne({ id: loggedInUserId }, { $set: { currentChallenge: options.challenge } });
+    req.session.challenge = options.challenge;
 
     res.send(options);
 
@@ -245,8 +283,12 @@ app.post('/verify-authentication', async (req, res) => {
 
   try {
     // You need to know the user by this point
-    const user : User = (await UserModel.findOne({id: loggedInUserId}) as unknown) as User;
-    const expectedChallenge = user.currentChallenge;
+
+    // First factor authentication gives the userId in the userHandle (resident credential)
+    const userId = body.response.userHandle;
+    const user : User = (await UserModel.findOne({id: userId}) as unknown) as User;
+    
+    const expectedChallenge = req.session.challenge;
 
     let dbAuthenticator;
     const bodyCredIDBuffer = base64url.toBuffer(body.rawId);
@@ -286,6 +328,7 @@ app.post('/verify-authentication', async (req, res) => {
     }
 
     res.send({ verified });
+    req.session.challenge = "";
 
   } catch (error) {
     res.status(500).send("User is not registered in the database");
