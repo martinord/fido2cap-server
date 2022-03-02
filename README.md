@@ -1,5 +1,13 @@
 # WebAuthn Authentication Server
 
+This is a WebAuthn Authentication Server with a simple login and administration interface.
+
+## Usage
+
+For registering a new user, using resident credentials in a security key, access to https://localhost:4443/admin. Then, for authentication, access the root webpage at https://localhost:4443.
+
+Notice that TLS must be enabled, as it is a requirement of the WebAuthn standard.
+
 ## Development Quick Start
 
 ```bash
