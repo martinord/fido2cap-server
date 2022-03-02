@@ -13,7 +13,7 @@
 
       <div class="controls">
         <section id="registration">
-          
+          <p>Username: <input id="username" type="text"></p>
           <button id="btnRegBegin">
             <strong>🚪&nbsp;Register Security Key</strong>
           </button>
@@ -55,13 +55,15 @@
           const elemSuccess = document.querySelector('#regSuccess');
           const elemError = document.querySelector('#regError');
           const elemDebug = document.querySelector('#regDebug');
+          const elemUsername = document.querySelector('#username');
 
           // Reset success/error messages
           elemSuccess.innerHTML = '';
           elemError.innerHTML = '';
           elemDebug.innerHTML = '';
 
-          const resp = await fetch('/generate-registration-options');
+          const resp = await fetch('/generate-registration-options?' + new URLSearchParams({ 'username' : elemUsername.value }));
+          elemUsername.disabled = true;
 
           let attResp;
           try {
@@ -91,7 +93,9 @@
           printDebug(elemDebug, 'Server Response', JSON.stringify(verificationJSON, null, 2));
 
           if (verificationJSON && verificationJSON.verified) {
-            elemSuccess.innerHTML = `Authenticator registered!`;
+            elemSuccess.innerHTML = 'Authenticator registered for user ' + elemUsername.value + '!';
+            elemUsername.disabled = false;
+            elemUsername.value = '';
           } else {
             elemError.innerHTML = `Oh no, something went wrong! Response: <pre>${JSON.stringify(
               verificationJSON,

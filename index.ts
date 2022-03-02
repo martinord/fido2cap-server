@@ -55,6 +55,7 @@ app.use(express.static('./public/'));
  declare module "express-session" {
   interface SessionData {
     userId: string,
+    username: string,
     challenge: string
   }
 }
@@ -113,14 +114,14 @@ mongoose.connect('mongodb://localhost:27017/mydb', {
 /**
  * Helper functions
  */
-function generateRandomUserId(): string {
+async function generateRandomUserId(): Promise<string> {
   let outString: string = '';
   const inOptions: string = 'abcdefghijklmnopqrstuvwxyz0123456789';
 
   for (let i = 0; i < 32; i++) 
     outString += inOptions.charAt(Math.floor(Math.random() * inOptions.length));
 
-  return outString;
+  return (await UserModel.findOne({ id: outString })) ? generateRandomUserId() : outString;
 }
 
 /**
@@ -128,25 +129,20 @@ function generateRandomUserId(): string {
  */
 app.get('/generate-registration-options', async (req, res) => {
   try {
+    const username = `${req.query.username ? req.query.username : "user"}@${rpID}`;
 
-    let userId = generateRandomUserId();
-    while(await UserModel.findOne({ id: userId }))
-      userId = generateRandomUserId();
+    const user : User = (await UserModel.findOne({username: username}) as unknown) as User;
+    
+    let userId = user ? user.id : await generateRandomUserId();
 
-    await UserModel.createCollection();
-    const user_db = new UserModel({ id: userId, username: `user@${rpID}`});
-    const user : User = (await user_db.save() as unknown) as User;
-
-    if(!req.session.userId)
-      req.session.userId = userId;
-
-    // const user : User = (await UserModel.findOne({username: userId}) as unknown) as User;
+    req.session.userId = userId;
+    req.session.username = username;
 
     const opts: GenerateRegistrationOptionsOpts = {
       rpName: 'SimpleWebAuthn Example',
       rpID,
-      userID: user.id,
-      userName: user.username,
+      userID: userId,
+      userName: username,
       timeout: 60000,
       attestationType: 'direct',
       /**
@@ -154,12 +150,13 @@ app.get('/generate-registration-options', async (req, res) => {
        * registering the same device multiple times. The authenticator will simply throw an error in
        * the browser if it's asked to perform registration when one of these ID's already resides
        * on it.
+       * NOTE: If the user is registered, exclude the already registered devices from registration
        */
-      excludeCredentials: user.devices.map(dev => ({
+      excludeCredentials: user ? user.devices.map(dev => ({
         id: dev.credentialID,
         type: 'public-key',
         transports: dev.transports,
-      })),
+      })) : [],
       /**
        * The optional authenticatorSelection property allows for specifying more constraints around
        * the types of authenticators that users to can use for registration
@@ -196,8 +193,8 @@ app.post('/verify-registration', async (req, res) => {
   try {
 
     const userId = req.session.userId;
+    const username = req.session.username;
     const expectedChallenge = req.session.challenge;
-    const user : User = (await UserModel.findOne({id: userId}) as unknown) as User;
 
     let verification: VerifiedRegistrationResponse;
     try {
@@ -219,22 +216,34 @@ app.post('/verify-registration', async (req, res) => {
     if (verified && registrationInfo) {
       const { credentialPublicKey, credentialID, counter } = registrationInfo;
 
-      const existingDevice = user.devices.find(device => device.credentialID === credentialID);
+      var user : User = (await UserModel.findOne({username: username}) as unknown) as User;
 
-      if (!existingDevice) {
-        /**
-         * Add the returned device to the user's list of devices
-         */
-        const newDevice: AuthenticatorDevice = {
-          credentialPublicKey,
-          credentialID,
-          counter,
-          transports: body.transports,
-        };
-        user.devices.push(newDevice);
+      const newDevice: AuthenticatorDevice = {
+        credentialPublicKey,
+        credentialID,
+        counter,
+        transports: body.transports,
+      };
+
+      if (user) {
+        const existingDevice = user.devices.find(device => device.credentialID === credentialID);
+
+        if (!existingDevice) {
+          /**
+           * Add the returned device to the user's list of devices
+           */
+          user.devices.push(newDevice);
+
+          await UserModel.updateOne({ id: userId }, { $set: { devices: user.devices } });
+        }
+      
+      } else {
+        // Create new user if it does not already exist
+        UserModel.createCollection().then( async function() {
+          const user_db = new UserModel({ id: userId, username: username, devices: [ newDevice ] });
+          user_db.save();
+        })
       }
-
-      await UserModel.updateOne({ id: userId }, { $set: { devices: user.devices } });
 
       res.send({ verified });
       req.session.challenge = "";
