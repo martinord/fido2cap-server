@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/styles.css" />
+    <title>WebAuthn Authentication Server</title>
+  </head>
+  <body>
+    <div class="container">
+      <h1>User Dashboard</h1>
+      <h2 id="username">You are not logged in</h2>
+      <button hidden id="btnLogout" onclick="window.location='/logout'">
+        <strong>Logout</strong>
+      </button>
+      <a href="/">Go back</a>
+
+      <p class="systemError"></p>
+    </div>
+    <script>
+      fetch('/user-details').then( async function(login) {
+        let user = await login.json();
+        if (user) {}
+          document.querySelector('#username').innerHTML = `Welcome, ${ user.username }!`;
+          document.querySelector('#btnLogout').hidden = false;
+      });
+    </script>
+  </body>
+</html>

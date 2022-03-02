@@ -245,8 +245,10 @@ app.post('/verify-registration', async (req, res) => {
         })
       }
 
-      res.send({ verified });
       req.session.challenge = "";
+      req.session.userId = "";
+      req.session.username = "";
+      res.send({ verified });
     }
   } catch (error) {
     res.status(500).send("User is not registered in the database");
@@ -279,7 +281,8 @@ app.get('/generate-authentication-options', async (req, res) => {
      * after you verify an authenticator response.
      */
     req.session.challenge = options.challenge;
-
+    
+    req.session.userId = "";
     res.send(options);
 
   } catch (error) {
@@ -334,14 +337,47 @@ app.post('/verify-authentication', async (req, res) => {
     if (verified) {
       // Update the authenticator's counter in the DB to the newest count in the authentication
       dbAuthenticator.counter = authenticationInfo.newCounter;
+      req.session.userId = userId;
     }
 
-    res.send({ verified });
     req.session.challenge = "";
+    res.send({ verified });
 
   } catch (error) {
     res.status(500).send("User is not registered in the database");
   }
+});
+
+/**
+ * User details
+ */
+ app.get('/user-details', async (req, res) => {
+  
+  const userId = req.session.userId; 
+
+  if( userId && ( userId !== "" ) ) {
+    const user : User = (await UserModel.findOne({ id: userId }) as unknown) as User;
+    try {
+
+      res.send( { username: user.username} );
+    
+    } catch (error) {
+      res.status(500).send("Internal server error");
+    }
+  } else {
+    res.send("You are not logged in!");
+  }
+ 
+});
+
+/**
+ * User logout
+ */
+ app.get('/logout', async (req, res) => {
+  
+  req.session.userId = ""; 
+  res.redirect(301, '/');
+ 
 });
 
 if (ENABLE_HTTPS) {
