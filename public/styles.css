@@ -1,5 +1,16 @@
 :root {
-  /* Almond CSS Theming */
+  /*
+   * Almond CSS Theming 
+   */
+  /* Primary Color -> hsl(210,50,40) */
+  --primaryH: 210;
+  --primaryS: 50%;
+  --primaryL: 40%;
+  /* Secondary Color -> hsl(201,51,69) */
+  --secondaryH: 210;
+  --secondaryS: 51%;
+  --secondaryL: 69%;
+  /* Other Parameters */
   --primary-bg: #efefef;
   --secondary-bg: #1c2128;
   --input-bg: #1c2128;
@@ -9,6 +20,9 @@
   --font-weight-normal: 400;
   --border-radius: 0.25rem;
   --heading-margin: 1.5rem 0 3rem;
+  /* Fixes */
+  --primary-lighter: hsl(var(--primaryH), var(--primaryS), 30%);
+  --secondary-lighter: hsl(var(--secondaryH), var(--secondaryS), 15%);
 }
 
 body {
@@ -27,6 +41,17 @@ textarea {
   min-width: 95%;
   min-height: 20vh;
   background-color: black;
+}
+
+table {
+  margin-top: 10%;
+  margin-bottom: 10%;
+}
+
+table>caption {
+  font-size: calc(var(--font-size-root) + 8px);
+  font-weight: calc(var(--font-weight-normal) + 200);
+  margin-bottom: 2%;
 }
 
 .container {
