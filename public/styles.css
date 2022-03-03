@@ -23,6 +23,12 @@ input[type="text"], textarea {
   background-color: var(--input-bg); 
 }
 
+textarea {
+  min-width: 95%;
+  min-height: 20vh;
+  background-color: black;
+}
+
 .container {
   width: 95%;
   margin: auto;
