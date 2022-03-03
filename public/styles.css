@@ -5,7 +5,7 @@
   --input-bg: #1c2128;
   --font-color: #efefef;
   --font-family: 'Courier New', Courier, monospace;
-  --font-size-root: 16px;
+  --font-size-root: calc(12px + 0.2vw);
   --font-weight-normal: 400;
   --border-radius: 0.25rem;
   --heading-margin: 1.5rem 0 3rem;
