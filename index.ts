@@ -42,6 +42,7 @@ import type {
 } from '@simplewebauthn/typescript-types';
 
 import { User, UserModel } from './models/user';
+import type { RegisteredUser } from './models/user';
 
 const app = express();
 
@@ -338,6 +339,7 @@ app.post('/verify-authentication', async (req, res) => {
       // Update the authenticator's counter in the DB to the newest count in the authentication
       dbAuthenticator.counter = authenticationInfo.newCounter;
       req.session.userId = userId;
+      await UserModel.updateOne({ id: userId }, { $set: { isLoggedIn: true } });
     }
 
     req.session.challenge = "";
@@ -375,8 +377,31 @@ app.post('/verify-authentication', async (req, res) => {
  */
  app.get('/logout', async (req, res) => {
   
-  req.session.userId = ""; 
+  const userId = req.session.userId;
+
+  await UserModel.updateOne({ id: userId }, { $set: { isLoggedIn: false } });
+
+  req.session.userId = "";
   res.redirect(301, '/');
+ 
+});
+
+/**
+ * Registered Users
+ */
+ app.get('/registered-users', async (req, res) => {
+
+  const users : User[] = (await UserModel.find() as unknown) as User[];
+
+  res.send({
+    users: users.map( user => (
+        {
+          username: user.username,
+          nofdevices: user.devices.length,
+          isLoggedIn: user.isLoggedIn
+        }
+    )
+  )});
  
 });
 
