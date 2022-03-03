@@ -125,12 +125,20 @@ async function generateRandomUserId(): Promise<string> {
   return (await UserModel.findOne({ id: outString })) ? generateRandomUserId() : outString;
 }
 
+function isEmailAddress( text : string): boolean {
+  const regexp = new RegExp(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
+
+  return regexp.test(text);
+}
+
 /**
  * Registration (a.k.a. "Registration")
  */
 app.get('/generate-registration-options', async (req, res) => {
   try {
-    const username = `${req.query.username ? req.query.username : "user"}@${rpID}`;
+    var username : string = req.query.username ? req.query.username as string : 'user';
+
+    if(!isEmailAddress(username)) username = `${username}@${rpID}`;
 
     const user : User = (await UserModel.findOne({username: username}) as unknown) as User;
     
