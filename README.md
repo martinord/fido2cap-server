@@ -11,8 +11,9 @@ Notice that TLS must be enabled, as it is a requirement of the WebAuthn standard
 ## Development Quick Start
 
 ```bash
-npm install
-npm start
+npm install         # installs NPM dependencies
+npm build:styles    # builds the CSS styles
+npm start           # starts the server
 ```
 
 ### TLS Certificates

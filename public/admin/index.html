@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://unpkg.com/@simplewebauthn/browser/dist/bundle/index.es5.umd.min.js"></script>
+    <link rel="stylesheet" href="/almond.lite.min.css" />
     <link rel="stylesheet" href="/styles.css" />
     <title>WebAuthn Authentication Server</title>
   </head>
@@ -13,9 +14,10 @@
 
       <div class="controls">
         <section id="registration">
-          <p>Username: <input id="username" type="text"></p>
+          <label>Username</label>
+          <input id="username" type="text">
           <button id="btnRegBegin">
-            <strong>🚪&nbsp;Register Security Key</strong>
+            🚪&nbsp;Register Security Key
           </button>
           <p id="regSuccess" class="success"></p>
           <p id="regError" class="error"></p>
