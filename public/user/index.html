@@ -21,9 +21,10 @@
     <script>
       fetch('/user-details').then( async function(login) {
         let user = await login.json();
-        if (user) {}
+        if (user) {
           document.querySelector('#username').innerHTML = `Welcome, ${ user.username }!`;
           document.querySelector('#btnLogout').hidden = false;
+        }
       });
     </script>
   </body>
