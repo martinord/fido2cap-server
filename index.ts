@@ -44,6 +44,8 @@ import type {
 import { User, UserModel } from './models/user';
 import type { RegisteredUser } from './models/user';
 
+import DOMPurify from 'isomorphic-dompurify';
+
 const app = express();
 
 const { ENABLE_CONFORMANCE, ENABLE_HTTPS, SESSION_KEY } = process.env;
@@ -137,6 +139,8 @@ function isEmailAddress( text : string): boolean {
 app.get('/generate-registration-options', async (req, res) => {
   try {
     var username : string = req.query.username ? req.query.username as string : 'user';
+
+    username = DOMPurify.sanitize(username, {USE_PROFILES: {html: false}});
 
     if(!isEmailAddress(username)) username = `${username}@${rpID}`;
 
