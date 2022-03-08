@@ -57,6 +57,7 @@ app.use(express.static('./public/'));
  */
  declare module "express-session" {
   interface SessionData {
+    loggedUserId: string,
     userId: string,
     username: string,
     challenge: string,
@@ -139,11 +140,19 @@ function isEmailAddress( text : string): boolean {
  */
 function authorizeOnlyAdmin(req: Request, res: Response, next: NextFunction) {
 
-  if (!req.session.userId) return res.sendStatus(401);
+  if (!req.session.loggedUserId) return res.sendStatus(401);
 
   if (!req.session.isAdmin) return res.sendStatus(403);
 
   next();
+}
+
+/**
+ * Session helpers
+ */
+async function logout(loggedUserId: string | undefined) {
+  if (loggedUserId && (loggedUserId != ""))
+    await UserModel.updateOne({ id: loggedUserId }, { $set: { isLoggedIn: false } });
 }
 
 /**
@@ -308,7 +317,6 @@ app.get('/generate-authentication-options', async (req, res) => {
      */
     req.session.challenge = options.challenge;
     
-    req.session.userId = "";
     res.send(options);
 
   } catch (error) {
@@ -322,9 +330,9 @@ app.post('/verify-authentication', async (req, res) => {
   try {
     // You need to know the user by this point
 
-    // First factor authentication gives the userId in the userHandle (resident credential)
-    const userId = body.response.userHandle;
-    const user : User = (await UserModel.findOne({id: userId}) as unknown) as User;
+    // First factor authentication gives the loggedUserId in the userHandle (resident credential)
+    const loggedUserId = body.response.userHandle;
+    const user : User = (await UserModel.findOne({id: loggedUserId}) as unknown) as User;
     
     const expectedChallenge = req.session.challenge;
 
@@ -363,9 +371,13 @@ app.post('/verify-authentication', async (req, res) => {
     if (verified) {
       // Update the authenticator's counter in the DB to the newest count in the authentication
       dbAuthenticator.counter = authenticationInfo.newCounter;
-      req.session.userId = userId;
+      
+      // Log out previous user
+      logout(req.session.loggedUserId);
+
+      req.session.loggedUserId = loggedUserId;
       req.session.isAdmin = user.isAdmin;
-      await UserModel.updateOne({ id: userId }, { $set: { isLoggedIn: true } });
+      await UserModel.updateOne({ id: loggedUserId }, { $set: { isLoggedIn: true } });
     }
 
     req.session.challenge = "";
@@ -381,10 +393,10 @@ app.post('/verify-authentication', async (req, res) => {
  */
  app.get('/user-details', async (req, res) => {
   
-  const userId = req.session.userId; 
+  const loggedUserId = req.session.loggedUserId; 
 
-  if( userId && ( userId !== "" ) ) {
-    const user : User = (await UserModel.findOne({ id: userId }) as unknown) as User;
+  if( loggedUserId && ( loggedUserId !== "" ) ) {
+    const user : User = (await UserModel.findOne({ id: loggedUserId }) as unknown) as User;
     try {
 
       res.send( { username: user.username, isAdmin: user.isAdmin } );
@@ -403,11 +415,11 @@ app.post('/verify-authentication', async (req, res) => {
  */
  app.get('/logout', async (req, res) => {
   
-  const userId = req.session.userId;
+  const loggedUserId = req.session.loggedUserId;
 
-  await UserModel.updateOne({ id: userId }, { $set: { isLoggedIn: false } });
+  await logout(loggedUserId);
 
-  req.session.userId = "";
+  req.session.loggedUserId = "";
   res.redirect(301, '/');
  
 });
