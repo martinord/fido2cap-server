@@ -387,7 +387,7 @@ app.post('/verify-authentication', async (req, res) => {
     const user : User = (await UserModel.findOne({ id: userId }) as unknown) as User;
     try {
 
-      res.send( { username: user.username} );
+      res.send( { username: user.username, isAdmin: user.isAdmin } );
     
     } catch (error) {
       res.status(500).send("Internal server error");

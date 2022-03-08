@@ -14,6 +14,9 @@
       <button hidden id="btnLogout" onclick="window.location='/logout'">
         Logout
       </button>
+      <button hidden id="btnAdmin" onclick="window.location='/admin'">
+        Admin Interface
+      </button>
       <a href="/">Go back</a>
 
       <p class="systemError"></p>
@@ -24,6 +27,8 @@
         if (user) {
           document.querySelector('#username').innerHTML = `Welcome, ${ user.username }!`;
           document.querySelector('#btnLogout').hidden = false;
+          if(user.isAdmin)
+            document.querySelector('#btnAdmin').hidden = false;
         }
       });
     </script>
