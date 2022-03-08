@@ -48,7 +48,7 @@ import DOMPurify from 'isomorphic-dompurify';
 
 const app = express();
 
-const { ENABLE_CONFORMANCE, ENABLE_HTTPS, SESSION_KEY } = process.env;
+const { ENABLE_HTTPS, SESSION_KEY } = process.env;
 
 app.use(express.static('./public/'));
 
@@ -73,18 +73,6 @@ app.use(session({
 
 
 app.use(express.json());
-
-/**
- * If the words "metadata statements" mean anything to you, you'll want to enable this route. It
- * contains an example of a more complex deployment of SimpleWebAuthn with support enabled for the
- * FIDO Metadata Service. This enables greater control over the types of authenticators that can
- * interact with the Rely Party (a.k.a. "RP", a.k.a. "this server").
- */
-if (ENABLE_CONFORMANCE === 'true') {
-  import('./fido-conformance').then(({ fidoRouteSuffix, fidoConformanceRouter }) => {
-    app.use(fidoRouteSuffix, fidoConformanceRouter);
-  });
-}
 
 /**
  * RP ID represents the "scope" of websites on which a authenticator should be usable. The Origin
