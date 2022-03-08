@@ -12,6 +12,11 @@
     <div class="container">
       <h1>Administration interface</h1>
 
+      <div hidden id="forbidden">
+        <h2>Forbidden</h2>
+        <a href="/">Go back</a>
+      </div>
+
       <div class="controls">
         <section id="registration">
           <label>Username</label>
@@ -121,19 +126,20 @@
       /**
       * Fetch registered users
       */
-      fetch('/registered-users').then( async function(list) {
-        let listJSON = await list.json();
-        const elemTable = document.querySelector('#registered-users-table');
+      fetch('/registered-users').then( async function(response) {
+        if(response.ok) {
+          let listJSON = await response.json();
+          const elemTable = document.querySelector('#registered-users-table');
 
-        listJSON.users.forEach( user => {
-          elemTable.innerHTML += 
-            "<td>" + user.username + "</td>" +
-            "<td>" + user.nofdevices + "</td>" +
-            "<td>" + ( user.isLoggedIn ? "YES" : "NO" ) + "</td>";
-        })
-
-        for(user in listJSON.users){
-          
+          listJSON.users.forEach( user => {
+            elemTable.innerHTML += 
+              "<td>" + user.username + "</td>" +
+              "<td>" + user.nofdevices + "</td>" +
+              "<td>" + ( user.isLoggedIn ? "YES" : "NO" ) + "</td>";
+          })
+        } else {
+          document.querySelector('#forbidden').hidden = false;
+          document.querySelector('#registration').hidden = true;
         }
       });
 
