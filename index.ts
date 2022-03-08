@@ -9,7 +9,7 @@ import https from 'https';
 import http from 'http';
 import fs from 'fs';
 
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
 import base64url from 'base64url';
 
@@ -59,7 +59,8 @@ app.use(express.static('./public/'));
   interface SessionData {
     userId: string,
     username: string,
-    challenge: string
+    challenge: string,
+    isAdmin: Boolean,
   }
 }
 app.use(session({
@@ -134,9 +135,21 @@ function isEmailAddress( text : string): boolean {
 }
 
 /**
+ * Session authorization Middleware
+ */
+function authorizeOnlyAdmin(req: Request, res: Response, next: NextFunction) {
+
+  if (!req.session.userId) return res.sendStatus(401);
+
+  if (!req.session.isAdmin) return res.sendStatus(403);
+
+  next();
+}
+
+/**
  * Registration (a.k.a. "Registration")
  */
-app.get('/generate-registration-options', async (req, res) => {
+app.get('/generate-registration-options', authorizeOnlyAdmin, async (req, res) => {
   try {
     var username : string = req.query.username ? req.query.username as string : 'user';
 
@@ -200,7 +213,7 @@ app.get('/generate-registration-options', async (req, res) => {
   }  
 });
 
-app.post('/verify-registration', async (req, res) => {
+app.post('/verify-registration', authorizeOnlyAdmin, async (req, res) => {
   const body: RegistrationCredentialJSON = req.body;
 
   try {
@@ -351,6 +364,7 @@ app.post('/verify-authentication', async (req, res) => {
       // Update the authenticator's counter in the DB to the newest count in the authentication
       dbAuthenticator.counter = authenticationInfo.newCounter;
       req.session.userId = userId;
+      req.session.isAdmin = user.isAdmin;
       await UserModel.updateOne({ id: userId }, { $set: { isLoggedIn: true } });
     }
 
@@ -401,7 +415,7 @@ app.post('/verify-authentication', async (req, res) => {
 /**
  * Registered Users
  */
- app.get('/registered-users', async (req, res) => {
+ app.get('/registered-users', authorizeOnlyAdmin, async (req, res) => {
 
   const users : User[] = (await UserModel.find() as unknown) as User[];
 
