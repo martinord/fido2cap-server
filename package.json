@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon index.ts",
+    "db": "cd db && docker-compose up -d && cd ..",
     "build": "tsc",
     "build:styles": "cd build/almond.css/ && npm run build && cp dist/almond.lite.min.css ../../public/"
   },
