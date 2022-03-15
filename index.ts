@@ -34,13 +34,14 @@ import type {
   AuthenticatorDevice,
 } from '@simplewebauthn/typescript-types';
 
-import { User, UserModel } from './models/user';
+import { RegisteredUser, User, UserModel } from './models/user';
+import { SessionModel } from './models/session';
 
 import DOMPurify from 'isomorphic-dompurify';
 
 const app = express();
 
-const { ENABLE_HTTPS, SESSION_KEY } = process.env;
+const { ENABLE_HTTPS, SESSION_KEY, SESSION_EXPIRE_TIME } = process.env;
 
 app.use(express.static('./public/'));
 
@@ -60,7 +61,11 @@ app.use(session({
   secret: SESSION_KEY as string,
   saveUninitialized: true,
   resave: true,
-  cookie: { secure: true }
+  cookie: { 
+    secure: true,
+    // Expiration time in seconds, set to 1h by default
+    maxAge: ((SESSION_EXPIRE_TIME ?? 3600) as number) * 1000
+  }
 }))
 
 
@@ -78,7 +83,7 @@ export let expectedOrigin = '';
  */
 mongoose.connect('mongodb://localhost:27017/mydb', {
   serverSelectionTimeoutMS: 5000,
-  autoIndex: false,
+  autoIndex: true,
   maxPoolSize: 10,
   socketTimeoutMS: 45000,
   family: 4
@@ -119,8 +124,19 @@ function authorizeOnlyAdmin(req: Request, res: Response, next: NextFunction) {
  * Session helpers
  */
 async function logout(loggedUserId: string | undefined) {
-  if (loggedUserId && (loggedUserId != ""))
-    await UserModel.updateOne({ id: loggedUserId }, { $set: { isLoggedIn: false } });
+  if (loggedUserId && (loggedUserId != "")) {
+    // TODO: Allow more than one session
+    await SessionModel.deleteMany( { userId: loggedUserId }); 
+  }
+}
+
+async function login(loggedUserId: string | undefined) {
+  if (loggedUserId && (loggedUserId != "")) {
+    SessionModel.createCollection().then( async function() {
+      const session_db = new SessionModel({ userId: loggedUserId });
+      session_db.save();
+    })
+  }  
 }
 
 /**
@@ -314,7 +330,8 @@ app.post('/verify-authentication', async (req, res) => {
 
       req.session.loggedUserId = loggedUserId;
       req.session.isAdmin = user.isAdmin;
-      await UserModel.updateOne({ id: loggedUserId }, { $set: { isLoggedIn: true } });
+
+      login(loggedUserId);
     }
 
     req.session.challenge = "";
@@ -368,15 +385,15 @@ app.post('/verify-authentication', async (req, res) => {
 
   const users : User[] = (await UserModel.find() as unknown) as User[];
 
-  res.send({
-    users: users.map( user => (
-        {
-          username: user.username,
-          nofdevices: user.devices.length,
-          isLoggedIn: user.isLoggedIn
-        }
-    )
-  )});
+  var registered_users : RegisteredUser[] = await Promise.all(users.map( async (user) => (
+    {
+      username: user.username,
+      nofdevices: user.devices.length,
+      isLoggedIn: (await SessionModel.findOne({ userId: user.id }))
+    }
+  )));
+
+  res.send({ users: registered_users });
  
 });
 
