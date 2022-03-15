@@ -1,10 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/**
- * An example Express server showing off a simple integration of @simplewebauthn/server.
- *
- * The webpages served from ./public use @simplewebauthn/browser.
- */
-
 import https from 'https';
 import http from 'http';
 import fs from 'fs';
@@ -42,7 +35,6 @@ import type {
 } from '@simplewebauthn/typescript-types';
 
 import { User, UserModel } from './models/user';
-import type { RegisteredUser } from './models/user';
 
 import DOMPurify from 'isomorphic-dompurify';
 
@@ -55,7 +47,7 @@ app.use(express.static('./public/'));
 /**
  * Session
  */
- declare module "express-session" {
+declare module "express-session" {
   interface SessionData {
     loggedUserId: string,
     userId: string,
@@ -79,9 +71,6 @@ app.use(express.json());
  * represents the expected URL from which registration or authentication occurs.
  */
 export const rpID = 'localhost';
-// This value is set at the bottom of page as part of server initialization (the empty string is
-// to appease TypeScript until we determine the expected origin based on whether or not HTTPS
-// support is enabled)
 export let expectedOrigin = '';
 
 /**
@@ -94,15 +83,6 @@ mongoose.connect('mongodb://localhost:27017/mydb', {
   socketTimeoutMS: 45000,
   family: 4
 }).then((db) => console.log("db is connected")).catch((err) => console.log(err));
-
-/**
- * 2FA and Passwordless WebAuthn flows expect you to be able to uniquely identify the user that
- * performs registration or authentication. The user ID you specify here should be your internal,
- * _unique_ ID for that user (uuid, etc...). Avoid using identifying information here, like email
- * addresses, as it may be stored within the authenticator.
- *
- * Here, the example server assumes the following user has completed login:
- */
 
 /**
  * Helper functions
@@ -144,7 +124,7 @@ async function logout(loggedUserId: string | undefined) {
 }
 
 /**
- * Registration (a.k.a. "Registration")
+ * Registration
  */
 app.get('/generate-registration-options', authorizeOnlyAdmin, async (req, res) => {
   try {
@@ -168,39 +148,20 @@ app.get('/generate-registration-options', authorizeOnlyAdmin, async (req, res) =
       userName: username,
       timeout: 60000,
       attestationType: 'direct',
-      /**
-       * Passing in a user's list of already-registered authenticator IDs here prevents users from
-       * registering the same device multiple times. The authenticator will simply throw an error in
-       * the browser if it's asked to perform registration when one of these ID's already resides
-       * on it.
-       * NOTE: If the user is registered, exclude the already registered devices from registration
-       */
       excludeCredentials: user ? user.devices.map(dev => ({
         id: dev.credentialID,
         type: 'public-key',
         transports: dev.transports,
       })) : [],
-      /**
-       * The optional authenticatorSelection property allows for specifying more constraints around
-       * the types of authenticators that users to can use for registration
-       * NOTE: 1st factor authentication (resident keys)
-       */
       authenticatorSelection: {
         userVerification: 'required',
         residentKey: 'required'
       },
-      /**
-       * Support the two most common algorithms: ES256, and RS256
-       */
       supportedAlgorithmIDs: [-7, -257],
     };
   
     const options = generateRegistrationOptions(opts);
   
-    /**
-     * The server needs to temporarily remember this value for verification, so don't lose it until
-     * after you verify an authenticator response.
-     */
     req.session.challenge = options.challenge;
 
     res.send(options);
@@ -252,9 +213,6 @@ app.post('/verify-registration', authorizeOnlyAdmin, async (req, res) => {
         const existingDevice = user.devices.find(device => device.credentialID === credentialID);
 
         if (!existingDevice) {
-          /**
-           * Add the returned device to the user's list of devices
-           */
           user.devices.push(newDevice);
 
           await UserModel.updateOne({ id: userId }, { $set: { devices: user.devices } });
@@ -271,6 +229,7 @@ app.post('/verify-registration', authorizeOnlyAdmin, async (req, res) => {
       req.session.challenge = "";
       req.session.userId = "";
       req.session.username = "";
+
       res.send({ verified });
     }
   } catch (error) {
@@ -279,30 +238,20 @@ app.post('/verify-registration', authorizeOnlyAdmin, async (req, res) => {
 });
 
 /**
- * Login (a.k.a. "Authentication")
+ * Login
  */
 app.get('/generate-authentication-options', async (req, res) => {
 
   try {
-    // const user : User = (await UserModel.findOne({id: userId}) as unknown) as User;
-
     const opts: GenerateAuthenticationOptionsOpts = {
       timeout: 60000,
       allowCredentials: [],
-      /**
-       * This optional value controls whether or not the authenticator needs be able to uniquely
-       * identify the user interacting with it (via built-in PIN pad, fingerprint scanner, etc...)
-       */
       userVerification: 'required',
       rpID,
     };
   
     const options = generateAuthenticationOptions(opts);
   
-    /**
-     * The server needs to temporarily remember this value for verification, so don't lose it until
-     * after you verify an authenticator response.
-     */
     req.session.challenge = options.challenge;
     
     res.send(options);
@@ -439,9 +388,6 @@ if (ENABLE_HTTPS) {
   https
     .createServer(
       {
-        /**
-         * See the README on how to generate this SSL cert and key pair using mkcert
-         */
         key: fs.readFileSync(`./${rpID}.key`),
         cert: fs.readFileSync(`./${rpID}.crt`),
       },
