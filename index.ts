@@ -50,6 +50,7 @@ app.use(express.static('./public/'));
  */
 declare module "express-session" {
   interface SessionData {
+    sessionId: string,
     loggedUserId: string,
     userId: string,
     username: string,
@@ -123,20 +124,20 @@ function authorizeOnlyAdmin(req: Request, res: Response, next: NextFunction) {
 /**
  * Session helpers
  */
-async function logout(loggedUserId: string | undefined) {
-  if (loggedUserId && (loggedUserId != "")) {
-    // TODO: Allow more than one session
-    await SessionModel.deleteMany( { userId: loggedUserId }); 
+async function logout(sessionId: string | undefined) {
+  if ( sessionId && (sessionId != "")) {
+    await SessionModel.findByIdAndDelete( new mongoose.Types.ObjectId(sessionId) ); 
   }
 }
 
-async function login(loggedUserId: string | undefined) {
+async function login(loggedUserId: string | undefined) : Promise<string> {
   if (loggedUserId && (loggedUserId != "")) {
-    SessionModel.createCollection().then( async function() {
-      const session_db = new SessionModel({ userId: loggedUserId });
-      session_db.save();
-    })
-  }  
+    await SessionModel.createCollection();
+    const session_db = new SessionModel({ userId: loggedUserId });
+    const document = await session_db.save();
+    return document.id;
+  }
+  return "";
 }
 
 /**
@@ -326,12 +327,12 @@ app.post('/verify-authentication', async (req, res) => {
       dbAuthenticator.counter = authenticationInfo.newCounter;
       
       // Log out previous user
-      logout(req.session.loggedUserId);
+      logout(req.session.sessionId);
 
       req.session.loggedUserId = loggedUserId;
       req.session.isAdmin = user.isAdmin;
 
-      login(loggedUserId);
+      req.session.sessionId = await login(loggedUserId);
     }
 
     req.session.challenge = "";
@@ -369,11 +370,10 @@ app.post('/verify-authentication', async (req, res) => {
  */
  app.get('/logout', async (req, res) => {
   
-  const loggedUserId = req.session.loggedUserId;
-
-  await logout(loggedUserId);
+  await logout(req.session.sessionId);
 
   req.session.loggedUserId = "";
+  req.session.sessionId = undefined;
   res.redirect(301, '/');
  
 });
