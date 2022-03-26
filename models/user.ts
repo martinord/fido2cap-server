@@ -35,7 +35,7 @@ export const UserModel = mongoose.model('User', userSchema);
 export declare type RegisteredUser = {
   username?: string,
   nofdevices?: number,
-  isLoggedIn?: boolean
+  activesessions?: number
 };
 
 module.exports = { User, UserModel };

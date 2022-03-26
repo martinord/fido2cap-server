@@ -32,7 +32,7 @@
               <tr>
                 <th>Username</th>
                 <th>Registered Devices</th>
-                <th>Is logged In</th>
+                <th>Active sessions</th>
               </tr>
             </thead>
             <tbody id="registered-users-table">
@@ -135,7 +135,7 @@
             elemTable.innerHTML += 
               "<td>" + user.username + "</td>" +
               "<td>" + user.nofdevices + "</td>" +
-              "<td>" + ( user.isLoggedIn ? "YES" : "NO" ) + "</td>";
+              "<td>" + user.activesessions + "</td>";
           })
         } else {
           document.querySelector('#forbidden').hidden = false;

@@ -389,7 +389,7 @@ app.post('/verify-authentication', async (req, res) => {
     {
       username: user.username,
       nofdevices: user.devices.length,
-      isLoggedIn: (await SessionModel.findOne({ userId: user.id }))
+      activesessions: (await SessionModel.find({ userId: user.id })).length
     }
   )));
 
