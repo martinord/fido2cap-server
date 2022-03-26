@@ -81,7 +81,7 @@
           elemError.innerHTML = '';
           elemDebug.innerHTML = '';
 
-          const resp = await fetch('/generate-registration-options?' + new URLSearchParams({ 'username' : elemUsername.value }));
+          const resp = await fetch('/api/generate-registration-options?' + new URLSearchParams({ 'username' : elemUsername.value }));
           elemUsername.disabled = true;
 
           let attResp;
@@ -100,7 +100,7 @@
             throw error;
           }
 
-          const verificationResp = await fetch('/verify-registration', {
+          const verificationResp = await fetch('/api/verify-registration', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -126,7 +126,7 @@
       /**
       * Fetch registered users
       */
-      fetch('/registered-users').then( async function(response) {
+      fetch('/api/registered-users').then( async function(response) {
         if(response.ok) {
           let listJSON = await response.json();
           const elemTable = document.querySelector('#registered-users-table');

@@ -143,7 +143,7 @@ async function login(loggedUserId: string | undefined) : Promise<string> {
 /**
  * Registration
  */
-app.get('/generate-registration-options', authorizeOnlyAdmin, async (req, res) => {
+app.get('/api/generate-registration-options', authorizeOnlyAdmin, async (req, res) => {
   try {
     var username : string = req.query.username ? req.query.username as string : 'user';
 
@@ -188,7 +188,7 @@ app.get('/generate-registration-options', authorizeOnlyAdmin, async (req, res) =
   }  
 });
 
-app.post('/verify-registration', authorizeOnlyAdmin, async (req, res) => {
+app.post('/api/verify-registration', authorizeOnlyAdmin, async (req, res) => {
   const body: RegistrationCredentialJSON = req.body;
 
   try {
@@ -257,7 +257,7 @@ app.post('/verify-registration', authorizeOnlyAdmin, async (req, res) => {
 /**
  * Login
  */
-app.get('/generate-authentication-options', async (req, res) => {
+app.get('/api/generate-authentication-options', async (req, res) => {
 
   try {
     const opts: GenerateAuthenticationOptionsOpts = {
@@ -278,7 +278,7 @@ app.get('/generate-authentication-options', async (req, res) => {
   }
 });
 
-app.post('/verify-authentication', async (req, res) => {
+app.post('/api/verify-authentication', async (req, res) => {
   const body: AuthenticationCredentialJSON = req.body;
 
   try {
@@ -346,7 +346,7 @@ app.post('/verify-authentication', async (req, res) => {
 /**
  * User details
  */
- app.get('/user-details', async (req, res) => {
+ app.get('/api/user-details', async (req, res) => {
   
   const loggedUserId = req.session.loggedUserId; 
 
@@ -381,7 +381,7 @@ app.post('/verify-authentication', async (req, res) => {
 /**
  * Registered Users
  */
- app.get('/registered-users', authorizeOnlyAdmin, async (req, res) => {
+ app.get('/api/registered-users', authorizeOnlyAdmin, async (req, res) => {
 
   const users : User[] = (await UserModel.find() as unknown) as User[];
 

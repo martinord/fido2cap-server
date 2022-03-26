@@ -61,7 +61,7 @@
           elemError.innerHTML = '';
           elemDebug.innerHTML = '';
 
-          const resp = await fetch('/generate-authentication-options');
+          const resp = await fetch('/api/generate-authentication-options');
 
           let asseResp;
           try {
@@ -74,7 +74,7 @@
             throw new Error(error);
           }
 
-          const verificationResp = await fetch('/verify-authentication', {
+          const verificationResp = await fetch('/api/verify-authentication', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

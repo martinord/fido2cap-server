@@ -22,7 +22,7 @@
       <p class="systemError"></p>
     </div>
     <script>
-      fetch('/user-details').then( async function(login) {
+      fetch('/api/user-details').then( async function(login) {
         let user = await login.json();
         if (user) {
           document.querySelector('#username').innerHTML = `Welcome, ${ user.username }!`;
