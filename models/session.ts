@@ -6,15 +6,14 @@ dotenv.config();
 const { ENABLE_HTTPS, SESSION_KEY, SESSION_EXPIRE_TIME } = process.env;
 
 let sessionSchema: mongoose.Schema = new mongoose.Schema({
-  createdAt: { 
+  expireAt: { 
     type: Date, 
     index: { 
       unique: true,
-      // Expire time set to 1h by default
-      expireAfterSeconds: (SESSION_EXPIRE_TIME ?? 3600) as number 
-    }, 
-    default: Date.now
-  },
+      expireAfterSeconds: 0 
+    },
+    // Expire time set to 1h by default
+    default: (new Date()).setSeconds((new Date()).getSeconds() + ((SESSION_EXPIRE_TIME ?? 3600) as number)) },
   userId: String
 });
 
