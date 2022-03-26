@@ -11,9 +11,10 @@ let sessionSchema: mongoose.Schema = new mongoose.Schema({
     index: { 
       unique: true,
       // Expire time set to 1h by default
-      expireAfterSeconds: (SESSION_EXPIRE_TIME ?? 3600) as number }, 
-      default: Date.now
-    },
+      expireAfterSeconds: (SESSION_EXPIRE_TIME ?? 3600) as number 
+    }, 
+    default: Date.now
+  },
   userId: String
 });
 
