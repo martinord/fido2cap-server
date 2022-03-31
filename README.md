@@ -24,6 +24,12 @@ echo "ENABLE_HTTPS=true" >> .env
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout localhost.key -out localhost.crt
 ```
 
+### Session secret key generation
+
+```bash
+echo "\nSESSION_KEY=`openssl rand -hex 64`" >> .env
+```
+
 ## Based on
 Based on the reference implementation of **@simplewebauthn/server** and **@simplewebauthn/browser**.
 
