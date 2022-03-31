@@ -15,11 +15,15 @@
       <div class="controls">
         <section id="authentication">
           <button id="btnAuthBegin">
-            🔐&nbsp;Authenticate Security Key
+            🔐&nbsp;Passwordless Login
           </button>
           <p id="authSuccess" class="success"></p>
           <p id="authError" class="error"></p>
-          <details closed>
+          <div class="information">
+            <p>Use your <strong>Security key</strong> to login in one click.</p>
+            <p><a href="/about">🔍&nbsp;Know more</a></p> 
+          </div>
+          <details closed hidden="true">
             <summary>Debugging console</summary>
             <textarea id="authDebug" spellcheck="false" readonly></textarea>
           </details>
@@ -55,6 +59,7 @@
           const elemSuccess = document.querySelector('#authSuccess');
           const elemError = document.querySelector('#authError');
           const elemDebug = document.querySelector('#authDebug');
+          const elemDetails = elemDebug.parentElement;
 
           // Reset success/error messages
           elemSuccess.innerHTML = '';
@@ -71,6 +76,7 @@
             printDebug(elemDebug, 'Authentication Response', JSON.stringify(asseResp, null, 2));
           } catch (error) {
             elemError.innerText = error;
+            elemDetails.hidden = false;
             throw new Error(error);
           }
 
@@ -92,6 +98,7 @@
             elemError.innerHTML = `Oh no, something went wrong! Response: <pre>${JSON.stringify(
               verificationJSON,
             )}</pre>`;
+            elemDetails.hidden = false;
           }
         });
       }

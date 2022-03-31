@@ -69,6 +69,11 @@ table>caption {
   color: #11a000;
 }
 
+.information {
+  margin-top: 3rem;
+  margin-bottom: 3rem;
+}
+
 /* Desktop Styles */
 @media (min-width: 75rem) {
   * {
