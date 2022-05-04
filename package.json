@@ -7,7 +7,8 @@
     "start": "nodemon index.ts",
     "db": "cd db && docker-compose up -d && cd ..",
     "build": "tsc",
-    "build:styles": "cd build/almond.css/ && npm run build && cp dist/almond.lite.min.css ../../public/"
+    "build:styles": "cd build/almond.css/ && npm run build && cp dist/almond.lite.min.css ../../public/",
+    "build:webauthn": "wget https://unpkg.com/@simplewebauthn/browser/dist/bundle/index.es5.umd.min.js -O public/index.es5.umd.min.js "
   },
   "keywords": [],
   "author": "",

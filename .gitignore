@@ -4,3 +4,4 @@ node_modules
 *.key
 dist
 public/almond*.css
+public/index.es5.umd.min.js
