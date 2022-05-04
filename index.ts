@@ -41,7 +41,7 @@ import DOMPurify from 'isomorphic-dompurify';
 
 const app = express();
 
-const { ENABLE_HTTPS, SESSION_KEY, SESSION_EXPIRE_TIME } = process.env;
+const { ENABLE_HTTPS, SESSION_KEY, SESSION_EXPIRE_TIME, ORIGIN, HOST } = process.env;
 
 app.use(express.static('./public/'));
 
@@ -76,7 +76,7 @@ app.use(express.json());
  * RP ID represents the "scope" of websites on which a authenticator should be usable. The Origin
  * represents the expected URL from which registration or authentication occurs.
  */
-export const rpID = 'localhost';
+export const rpID = ORIGIN || 'localhost';
 export let expectedOrigin = '';
 
 /**
@@ -398,7 +398,7 @@ app.post('/api/verify-authentication', async (req, res) => {
 });
 
 if (ENABLE_HTTPS) {
-  const host = '127.0.0.1';
+  const host = HOST || '127.0.0.1';
   const port = 4443;
   expectedOrigin = `https://${rpID}:${port}`;
 
@@ -414,9 +414,9 @@ if (ENABLE_HTTPS) {
       console.log(`🚀 Server ready at ${expectedOrigin} (${host}:${port})`);
     });
 } else {
-  const host = '127.0.0.1';
+  const host = HOST || '127.0.0.1';
   const port = 8000;
-  expectedOrigin = `http://localhost:${port}`;
+  expectedOrigin = `http://${rpID}:${port}`;
 
   http.createServer(app).listen(port, host, () => {
     console.log(`🚀 Server ready at ${expectedOrigin} (${host}:${port})`);
