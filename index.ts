@@ -414,9 +414,11 @@ if (ENABLE_HTTPS) {
       console.log(`🚀 Server ready at ${expectedOrigin} (${host}:${port})`);
     });
 } else {
+  // RP origin should always be HTTPS for WebAuthn to work
+  // This configuration should be used behind a HTTPS reverse proxy
   const host = HOST || '127.0.0.1';
   const port = 8000;
-  expectedOrigin = `http://${rpID}:${port}`;
+  expectedOrigin = `https://${rpID}:${port}`;
 
   http.createServer(app).listen(port, host, () => {
     console.log(`🚀 Server ready at ${expectedOrigin} (${host}:${port})`);
