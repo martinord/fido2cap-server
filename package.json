@@ -17,6 +17,7 @@
     "@simplewebauthn/server": "4.2.0",
     "@types/dompurify": "^2.3.3",
     "base64url": "^3.0.1",
+    "crypto": "^1.0.1",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "express-session": "^1.17.2",

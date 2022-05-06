@@ -35,15 +35,14 @@ import type {
 } from '@simplewebauthn/typescript-types';
 
 import { RegisteredUser, User, UserModel } from './models/user';
-import { SessionModel } from './models/session';
+import { Session, SessionModel } from './models/session';
+import * as fas from './fas';
 
 import DOMPurify from 'isomorphic-dompurify';
 
 const app = express();
 
-const { ENABLE_HTTPS, SESSION_KEY, SESSION_EXPIRE_TIME, ORIGIN, HOST } = process.env;
-
-app.use(express.static('./public/'));
+const { ENABLE_HTTPS, SESSION_KEY, SESSION_EXPIRE_TIME, CAPTIVE_PORTAL, ORIGIN, HOST } = process.env;
 
 /**
  * Session
@@ -56,6 +55,7 @@ declare module "express-session" {
     username: string,
     challenge: string,
     isAdmin: Boolean,
+    rhid: string
   }
 }
 app.use(session({
@@ -69,6 +69,93 @@ app.use(session({
   }
 }))
 
+/**
+ * Acticvate Captive Portal integration
+ * Compatible as FAS Authentication Server in OpenNDS
+ * FAS: Forward Authentication Server
+ */
+
+if (CAPTIVE_PORTAL) {
+  app.use(express.urlencoded({extended: true}));
+  app.post('/', fasController);
+  app.use(fas.middleware);
+}
+
+/**
+ * Requests from Authmon (OpenNDS) to authenticate clients
+ * Request types:
+ *  - View
+ *  - Clear
+ */
+async function fasController (req: Request, res: Response) {
+  let request = req.body;
+
+  if(!request.auth_get || !request.gatewayhash || !request.payload) return;
+
+  console.log("[Authmon Request] " + request.auth_get + " from " + request.gatewayhash);
+
+  switch (request.auth_get) {
+    case "clear":
+      console.log("[ - Authmon Request CLEAR] The authlist is cleared!");
+      await SessionModel.deleteMany({});
+      break;
+    
+    case "list":
+      console.log("[ - Authmon Request LIST] The authlist should be sent and cleared! (UNDER IMPLEMENTATION)");
+      // TODO: send not authenticated sessions and clear
+      break;
+
+    case "view":
+      let request_payload = Buffer.from(request.payload, 'base64').toString('utf-8');
+
+      let sessions : Session[] = (await SessionModel.find({ fasAuthentication: false }) as unknown) as Session[];
+
+      switch (request_payload) {
+        case "*":
+        case "none":
+          console.log("[ - Authmon Request VIEW] The list of authenticated clients is sent!");
+          let response : string = "";
+          
+          if ( sessions.length > 0 ) {
+          
+            sessions.forEach(session => {
+              response += ("* " + session.rhid + "\n"); 
+            });
+          
+            res.send(response);
+            console.log("[ -- Authmon Request VIEW] Authenticated client rhid list: " + response.replace(/(\r\n|\n|\r)/gm, ", "));
+          
+          } else {
+          
+            res.send("*")
+            console.log("[ -- Authmon Request VIEW] No new authenticated clients ");
+          
+          }  
+          break;
+        
+        default:
+          console.log("[ - Authmon Request VIEW] OpenNDS notification of authenticated clients!");
+          let rhid_payload = request_payload.split("* ")[1] as string;
+          let rhid_list = rhid_payload.split(" ") as string[];
+
+          try {
+            
+            rhid_list.forEach( async (rhid:string) => {
+              await SessionModel.updateOne({ rhid: rhid }, { $set: { fasAuthentication: true } });
+              console.log("[ -- Authmon Request VIEW] Confirmation of client authentication: " + rhid);
+            });
+
+            res.send("ack");
+          
+          } catch (error) {
+            console.log(error);
+          }
+      }
+      break;
+  }
+};
+
+app.use(express.static('./public/'));
 
 app.use(express.json());
 
@@ -130,10 +217,10 @@ async function logout(sessionId: string | undefined) {
   }
 }
 
-async function login(loggedUserId: string | undefined) : Promise<string> {
+async function login(loggedUserId: string | undefined, rhid: string | undefined) : Promise<string> {
   if (loggedUserId && (loggedUserId != "")) {
     await SessionModel.createCollection();
-    const session_db = new SessionModel({ userId: loggedUserId });
+    const session_db = new SessionModel({ userId: loggedUserId, rhid: rhid });
     const document = await session_db.save();
     return document.id;
   }
@@ -332,7 +419,7 @@ app.post('/api/verify-authentication', async (req, res) => {
       req.session.loggedUserId = loggedUserId;
       req.session.isAdmin = user.isAdmin;
 
-      req.session.sessionId = await login(loggedUserId);
+      req.session.sessionId = await login(loggedUserId, req.session.rhid);
     }
 
     req.session.challenge = "";
