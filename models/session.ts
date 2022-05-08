@@ -26,8 +26,8 @@ let sessionSchema: mongoose.Schema = new mongoose.Schema({
       unique: false,
       expireAfterSeconds: 0 
     },
-    // Expire time set to 1h by default
-    default: (new Date()).setSeconds((new Date()).getSeconds() + (+(SESSION_EXPIRE_TIME ?? 3600))) },
+    // Expire time in minutes, set to 1h by default
+    default: (new Date()).setSeconds((new Date()).getSeconds() + (+(SESSION_EXPIRE_TIME ?? 60) * 60)) },
   userId: String,
   rhid: String,
   fasAuthentication: { 

@@ -35,7 +35,7 @@ echo "\nSESSION_KEY=`openssl rand -hex 64`" >> .env
 
 This server can be used as a [Forwarding Authentication Service (FAS) server](https://opennds.readthedocs.io/en/stable/fas.html) for authentication in [openNDS](https://github.com/openNDS/openNDS) captive portal software.
 
-### Configuration
+### Configuration_
 
 For enabling it, you should specify some enironment variables first in the `.env` file:
 
@@ -44,6 +44,7 @@ CAPTIVE_PORTAL=true
 FAS_SHARED_KEY=<the shared secret of 32 bytes>
 ORIGIN=<your FQDN>
 HOST=<your server ip address>
+SESSION_EXPIRE_TIME=<session duration in minutes>
 ```
 
 The `FAS_SHARED_KEY` should be a shared random value of 32 bytes, configured in openNDS. It can be generated with:
@@ -61,6 +62,7 @@ option faspath '/'
 option fasremoteip '<your server ip address>'
 option fasremotefqdn '<your FQDN>'
 option faskey '<the shared secret of 32 bytes>'
+option sessiontimeout '<session duration in minutes>'
 ```
 
 ### Known issues
