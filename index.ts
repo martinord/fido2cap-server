@@ -56,7 +56,8 @@ declare module "express-session" {
     challenge: string,
     isAdmin: Boolean,
     rhid: string,
-    gatewayHash: string
+    gatewayHash: string,
+    originUrl: string
   }
 }
 app.use(session({
@@ -80,6 +81,7 @@ if (CAPTIVE_PORTAL) {
   app.use(express.urlencoded({extended: true}));
   app.post('/', fasController);
   app.use(fas.middleware);
+  app.use(fas.redirection);
 }
 
 /**

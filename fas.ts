@@ -24,9 +24,10 @@ export function middleware (req : Request, res : Response, next : Function) {
                 decipher.final()
             ]).toString('utf-8');
 
-        // Get hid and gatewayname
-        let hid : string = fas.split("=")[1].split(",")[0];
+        // Get hid, gatewayname and redirection url
+        let hid : string = fas.split("hid=")[1].split(",")[0];
         let gatewayName : string = fas.split("gatewayname=")[1].split(",")[0];
+        let originUrl : string = decodeURIComponent(fas.split("originurl=")[1].split(",")[0]);
 
         // Calculate gatewayHash
         let gatewayHash : string = crypto.createHash('sha256').update(gatewayName, 'utf8').digest().toString('hex');
@@ -39,9 +40,22 @@ export function middleware (req : Request, res : Response, next : Function) {
         // Store details in session
         req.session.rhid = rhid;
         req.session.gatewayHash = gatewayHash;
+        req.session.originUrl = originUrl;
     }
 
     next();
 };
 
-module.exports = { middleware };
+/**
+ * Captive Portal URL redirection after authentication
+ */
+
+export function redirection(req : Request, res : Response, next : Function) {
+    // if the client has a valid authenticated session
+    if (req.session.loggedUserId && ( req.session.loggedUserId !== "" ) && req.session.originUrl)
+        res.redirect(307, req.session.originUrl);
+    else
+        next(); 
+}
+
+module.exports = { middleware, redirection };
