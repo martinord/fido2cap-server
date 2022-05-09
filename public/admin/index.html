@@ -81,7 +81,7 @@
           elemError.innerHTML = '';
           elemDebug.innerHTML = '';
 
-          const resp = await fetch('/api/generate-registration-options?' + new URLSearchParams({ 'username' : elemUsername.value }));
+          const resp = await fetch('/api/registration?' + new URLSearchParams({ 'username' : elemUsername.value }));
           elemUsername.disabled = true;
 
           let attResp;
@@ -100,7 +100,7 @@
             throw error;
           }
 
-          const verificationResp = await fetch('/api/verify-registration', {
+          const verificationResp = await fetch('/api/registration', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
