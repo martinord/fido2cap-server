@@ -10,11 +10,13 @@ export class Session {
   userId: string;
   rhid: string;
   fasAuthentication: boolean;
+  gatewayHash: string | undefined;
   
-  constructor(userId: string) {
+  constructor(userId: string, gatewayHash: string | undefined) {
     this.userId = userId;
     this.rhid = "";
     this.fasAuthentication = false;
+    this.gatewayHash = gatewayHash;
   }
   
 }
@@ -30,6 +32,7 @@ let sessionSchema: mongoose.Schema = new mongoose.Schema({
     default: (new Date()).setSeconds((new Date()).getSeconds() + (+(SESSION_EXPIRE_TIME ?? 60) * 60)) },
   userId: String,
   rhid: String,
+  gatewayHash: String,
   fasAuthentication: { 
     type: Boolean,
     default: false

@@ -24,8 +24,12 @@ export function middleware (req : Request, res : Response, next : Function) {
                 decipher.final()
             ]).toString('utf-8');
 
-        // Get hid
+        // Get hid and gatewayname
         let hid : string = fas.split("=")[1].split(",")[0];
+        let gatewayName : string = fas.split("gatewayname=")[1].split(",")[0];
+
+        // Calculate gatewayHash
+        let gatewayHash : string = crypto.createHash('sha256').update(gatewayName, 'utf8').digest().toString('hex');
 
         // Calculate and store rhid
         let rhid : string = crypto.createHash('sha256').update(hid+FAS_SHARED_KEY, 'utf8').digest().toString('hex');
@@ -34,6 +38,7 @@ export function middleware (req : Request, res : Response, next : Function) {
 
         // Store details in session
         req.session.rhid = rhid;
+        req.session.gatewayHash = gatewayHash;
     }
 
     next();

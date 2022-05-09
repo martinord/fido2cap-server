@@ -55,7 +55,8 @@ declare module "express-session" {
     username: string,
     challenge: string,
     isAdmin: Boolean,
-    rhid: string
+    rhid: string,
+    gatewayHash: string
   }
 }
 app.use(session({
@@ -97,7 +98,7 @@ async function fasController (req: Request, res: Response) {
   switch (request.auth_get) {
     case "clear":
       console.log("[ - Authmon Request CLEAR] The authlist is cleared!");
-      await SessionModel.deleteMany({});
+      await SessionModel.deleteMany({ gatewayHash: request.gatewayhash });
       break;
     
     case "list":
@@ -108,7 +109,7 @@ async function fasController (req: Request, res: Response) {
     case "view":
       let request_payload = Buffer.from(request.payload, 'base64').toString('utf-8');
 
-      let sessions : Session[] = (await SessionModel.find({ fasAuthentication: false }) as unknown) as Session[];
+      let sessions : Session[] = (await SessionModel.find({ gatewayHash: request.gatewayhash, fasAuthentication: false }) as unknown) as Session[];
 
       switch (request_payload) {
         case "*":
@@ -141,7 +142,7 @@ async function fasController (req: Request, res: Response) {
           try {
             
             rhid_list.forEach( async (rhid:string) => {
-              await SessionModel.updateOne({ rhid: rhid }, { $set: { fasAuthentication: true } });
+              await SessionModel.updateOne({ gatewayHash: request.gatewayhash, rhid: rhid }, { $set: { fasAuthentication: true } });
               console.log("[ -- Authmon Request VIEW] Confirmation of client authentication: " + rhid);
             });
 
@@ -230,10 +231,10 @@ async function logout(sessionId: string | undefined) {
   }
 }
 
-async function login(loggedUserId: string | undefined, rhid: string | undefined) : Promise<string> {
+async function login(loggedUserId: string | undefined, rhid: string | undefined, gatewayHash: string | undefined) : Promise<string> {
   if (loggedUserId && (loggedUserId != "")) {
     await SessionModel.createCollection();
-    const session_db = new SessionModel({ userId: loggedUserId, rhid: rhid });
+    const session_db = new SessionModel({ userId: loggedUserId, rhid: rhid, gatewayHash: gatewayHash });
     const document = await session_db.save();
     return document.id;
   }
@@ -432,7 +433,7 @@ app.post('/api/verify-authentication', async (req, res) => {
       req.session.loggedUserId = loggedUserId;
       req.session.isAdmin = user.isAdmin;
 
-      req.session.sessionId = await login(loggedUserId, req.session.rhid);
+      req.session.sessionId = await login(loggedUserId, req.session.rhid, req.session.gatewayHash);
     }
 
     req.session.challenge = "";
@@ -526,7 +527,7 @@ if (ENABLE_HTTPS) {
   // RP origin should always be HTTPS for WebAuthn to work
   // This configuration should be used behind a HTTPS reverse proxy
   const host = HOST || '127.0.0.1';
-  const port = 8000;
+  const port = 4443;
   expectedOrigin = `https://${rpID}:${port}`;
 
   http.createServer(app).listen(port, host, () => {
