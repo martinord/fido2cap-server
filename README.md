@@ -110,6 +110,12 @@ config opennds
 	list users_to_router 'allow udp port 67'
 ```
 
+### Optional openNDS configuration
+
+- `option gatewayname 'My Gateway'`: allows setting different gateway names in different routers so that this FAS server can distinguish them.
+- `option authidletimeout '120'`: configure the time (minutes) after a client is disconnected if idle.
+- `option checkinterval '10'`: configure the time (seconds) openNDS will query the FAS server. The more frequent the queries are, the faster it will authorize the user.
+
 ### Known issues
 
 - Notice that the development TLS certificates will not be valid. openNDS will not trust them by default. You need valid TLS certificates, like the ones issued by Let's Encrypt (Certbot).
