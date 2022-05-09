@@ -197,13 +197,26 @@ function isEmailAddress( text : string): boolean {
 }
 
 /**
+ * Administration start up: allow using administrator privileges when admin not yet registered
+ */
+declare global {
+  var administratorConfigured: boolean;
+}
+
+async function isAdministratorConfigured() : Promise<boolean> {
+  
+  return (await UserModel.find({ isAdmin: true }).count() > 0);
+
+}
+
+/**
  * Session authorization Middleware
  */
 function authorizeOnlyAdmin(req: Request, res: Response, next: NextFunction) {
 
-  if (!req.session.loggedUserId) return res.sendStatus(401);
+  if (globalThis.administratorConfigured && !req.session.loggedUserId) return res.sendStatus(401);
 
-  if (!req.session.isAdmin) return res.sendStatus(403);
+  if (globalThis.administratorConfigured && !req.session.isAdmin) return res.sendStatus(403);
 
   next();
 }
@@ -482,6 +495,15 @@ app.post('/api/verify-authentication', async (req, res) => {
 
   res.send({ users: registered_users });
  
+});
+
+isAdministratorConfigured().then((admin) => {
+  globalThis.administratorConfigured = admin;
+  
+  if(!admin) 
+    console.log("Admin is not registered! Please, register a user at /admin and assign admin role at the database")
+  else 
+    console.log("admin is registered");  
 });
 
 if (ENABLE_HTTPS) {

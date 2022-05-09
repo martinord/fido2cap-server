@@ -6,6 +6,8 @@ This is a WebAuthn Authentication Server with a simple login and administration 
 
 For registering a new user, using resident credentials in a security key, access to https://localhost:4443/admin. Then, for authentication, access the root webpage at https://localhost:4443.
 
+An administrator role can also be assigned directly at the database document of a user (`isAdmin: true`). After the application restart, only administrators will be able to access the admin dashboard.
+
 Notice that TLS must be enabled, as it is a requirement of the WebAuthn standard.
 
 ## Development Quick Start
