@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import dotenv from 'dotenv';
 import crypto from 'crypto';
-import { Session, SessionModel } from '../models/session';
+import { Session, sessionDatabase } from '../models/session';
 
 dotenv.config();
 
@@ -75,7 +75,7 @@ export async function authmonController (req: Request, res: Response) {
     switch (request.auth_get) {
       case "clear":
         console.log("[ - Authmon Request CLEAR] The authlist is cleared!");
-        await SessionModel.deleteMany({ gatewayHash: request.gatewayhash });
+        await sessionDatabase.clearGatewaySessions(request.gatewayhash );
         break;
       
       case "list":
@@ -86,7 +86,7 @@ export async function authmonController (req: Request, res: Response) {
       case "view":
         let request_payload = Buffer.from(request.payload, 'base64').toString('utf-8');
   
-        let sessions : Session[] = (await SessionModel.find({ gatewayHash: request.gatewayhash, fasAuthentication: false }) as unknown) as Session[];
+        let sessions : Session[] = await sessionDatabase.getUnauthenticatedGatewaySessions(request.gatewayhash);
   
         switch (request_payload) {
           case "*":
@@ -119,7 +119,7 @@ export async function authmonController (req: Request, res: Response) {
             try {
               
               rhid_list.forEach( async (rhid:string) => {
-                await SessionModel.updateOne({ gatewayHash: request.gatewayhash, rhid: rhid }, { $set: { fasAuthentication: true } });
+                await sessionDatabase.markAuthenticatedGatewaySession(request.gatewayhash, rhid);
                 console.log("[ -- Authmon Request VIEW] Confirmation of client authentication: " + rhid);
               });
   

@@ -8,7 +8,7 @@ const { ENABLE_HTTPS, SESSION_KEY, SESSION_EXPIRE_TIME } = process.env;
 export class Session {
   
   userId: string;
-  rhid: string;
+  rhid: string | undefined;
   fasAuthentication: boolean;
   gatewayHash: string | undefined;
   
@@ -19,6 +19,67 @@ export class Session {
     this.gatewayHash = gatewayHash;
   }
   
+}
+
+class SessionDatabase {
+
+  sessionModel: mongoose.Model<Session>;
+
+  constructor(model : mongoose.Model<Session>){
+    this.sessionModel = model;
+  }
+
+  /**
+   * Get session by user ID
+   */
+  public async getByUserId( userId : string | undefined ) : Promise<Session[]> {
+    return (await this.sessionModel.find({ userId: userId }) as unknown) as Session[];
+  }
+
+  /**
+   * Clear all sessions by GatewayHash
+   */
+  public async clearGatewaySessions( gatewayHash : string ) {
+    await this.sessionModel.deleteMany({ gatewayHash: gatewayHash });
+  }
+
+  /**
+   * Get unauthenticated gateway sessions by GatewayHash
+   */
+  public async getUnauthenticatedGatewaySessions( gatewayHash : string ) : Promise<Session[]> {
+    return (await this.sessionModel.find({ gatewayHash: gatewayHash, fasAuthentication: false }) as unknown) as Session[];
+  }
+
+  /**
+   * Mark session as authenticated in the gateway by GatewayHash
+   */
+  public async markAuthenticatedGatewaySession( gatewayHash : string, rhid : string) {
+    await this.sessionModel.updateOne({ gatewayHash: gatewayHash, rhid: rhid }, { $set: { fasAuthentication: true } });
+  }
+
+  /**
+   * Logout user by sessionId
+   */
+  public async logoutSession( sessionId: string | undefined ) {
+    if ( sessionId && (sessionId != "")) {
+        await this.sessionModel.findByIdAndDelete( new mongoose.Types.ObjectId(sessionId) ); 
+    }
+  }
+
+  public async loginSession( loggedUserId: string | undefined, rhid: string | undefined, gatewayHash: string | undefined ) : Promise<string> {
+    if (loggedUserId && (loggedUserId != "")) {
+        await this.sessionModel.createCollection();
+        const session_db = new this.sessionModel({ 
+          userId: loggedUserId,
+          rhid: rhid,
+          fasAuthentication: false,
+          gatewayHash: gatewayHash
+        });
+        const document = await session_db.save();
+        return document.id;
+    }
+    return "";
+  }
 }
 
 let sessionSchema: mongoose.Schema = new mongoose.Schema({
@@ -40,6 +101,6 @@ let sessionSchema: mongoose.Schema = new mongoose.Schema({
   }
 });
 
-export const SessionModel = mongoose.model('Session', sessionSchema);
+export const sessionDatabase = new SessionDatabase(mongoose.model('Session', sessionSchema));
 
-module.exports = { Session, SessionModel };
+module.exports = { Session, sessionDatabase };

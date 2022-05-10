@@ -2,7 +2,7 @@ import https from 'https';
 import http from 'http';
 import fs from 'fs';
 
-import express, { Request, Response, NextFunction } from 'express';
+import express from 'express';
 import dotenv from 'dotenv';
 
 import mongoose from 'mongoose';
@@ -13,7 +13,7 @@ dotenv.config();
 import * as fas from './controllers/fas';
 import * as webauthn from './controllers/webauthn';
 import { authorizeOnlyAdmin, logoutRoute, registeredUsers, userDetails } from './controllers/session';
-import { isAdministratorConfigured } from './helpers/user';
+import { userDatabase } from './models/user';
 
 declare global {
   /**
@@ -83,7 +83,7 @@ app.use('/api/user-details', userDetails);
 app.use('/api/registered-users', authorizeOnlyAdmin, registeredUsers);
 app.use('/logout', logoutRoute);
 
-isAdministratorConfigured().then((admin) => {
+userDatabase.isAdministratorConfigured().then((admin) => {
   globalThis.administratorConfigured = admin;
   
   if(!admin) 

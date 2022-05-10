@@ -26,9 +26,9 @@ import DOMPurify from 'isomorphic-dompurify';
 import base64url from 'base64url';
 import { Router } from 'express';
 
-import { User, UserModel } from '../models/user';
-import { isEmailAddress, generateRandomUserId } from '../helpers/user';
-import { login, logout } from '../helpers/session';
+import { User, userDatabase } from '../models/user';
+import { isEmailAddress } from '../helpers/user';
+import { sessionDatabase } from '../models/session';
 
 export const registration : Router = Router();
 export const authentication : Router = Router();
@@ -44,9 +44,9 @@ registration.get('/', async (req, res) => {
 
         if(!isEmailAddress(username)) username = `${username}@${globalThis.rpID}`;
 
-        const user : User = (await UserModel.findOne({username: username}) as unknown) as User;
+        const user : User = await userDatabase.getByUsername(username);
         
-        let userId = user ? user.id : await generateRandomUserId();
+        let userId = user ? user.id : await userDatabase.generateRandomUserId();
 
         req.session.userId = userId;
         req.session.username = username;
@@ -108,10 +108,8 @@ registration.post('/', async (req, res) => {
 
         const { verified, registrationInfo } = verification;
 
-        if (verified && registrationInfo) {
+        if (verified && registrationInfo && userId && username) {
             const { credentialPublicKey, credentialID, counter } = registrationInfo;
-
-            var user : User = (await UserModel.findOne({username: username}) as unknown) as User;
 
             const newDevice: AuthenticatorDevice = {
                 credentialPublicKey,
@@ -120,21 +118,7 @@ registration.post('/', async (req, res) => {
                 transports: body.transports,
             };
 
-            if (user) {
-                const existingDevice = user.devices.find(device => device.credentialID === credentialID);
-
-                if (!existingDevice) {
-                    user.devices.push(newDevice);
-
-                    await UserModel.updateOne({ id: userId }, { $set: { devices: user.devices } });
-                }
-            } else {
-                // Create new user if it does not already exist
-                UserModel.createCollection().then( async function() {
-                    const user_db = new UserModel({ id: userId, username: username, devices: [ newDevice ] });
-                    user_db.save();
-                })
-            }
+            await userDatabase.addDeviceToUser(userId, username, newDevice);
 
             req.session.challenge = "";
             req.session.userId = "";
@@ -178,7 +162,7 @@ authentication.post('/', async (req, res) => {
 
         // First factor authentication gives the loggedUserId in the userHandle (resident credential)
         const loggedUserId = body.response.userHandle;
-        const user : User = (await UserModel.findOne({id: loggedUserId}) as unknown) as User;
+        const user : User = await userDatabase.getById(loggedUserId);
         
         const expectedChallenge = req.session.challenge;
 
@@ -220,12 +204,12 @@ authentication.post('/', async (req, res) => {
             dbAuthenticator.counter = authenticationInfo.newCounter;
             
             // Log out previous user
-            logout(req.session.sessionId);
+            sessionDatabase.logoutSession(req.session.sessionId);
 
             req.session.loggedUserId = loggedUserId;
             req.session.isAdmin = user.isAdmin;
 
-            req.session.sessionId = await login(loggedUserId, req.session.rhid, req.session.gatewayHash);
+            req.session.sessionId = await sessionDatabase.loginSession(loggedUserId, req.session.rhid, req.session.gatewayHash);
         }
 
         req.session.challenge = "";

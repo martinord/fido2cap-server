@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { logout } from '../helpers/session';
-import { User, UserModel, RegisteredUser } from '../models/user';
-import { SessionModel } from '../models/session';
+import { sessionDatabase } from '../models/session';
+import { User, userDatabase, RegisteredUser } from '../models/user';
 
 declare module "express-session" {
     interface SessionData {
@@ -33,7 +32,7 @@ export function authorizeOnlyAdmin(req: Request, res: Response, next: NextFuncti
  * User logout
  */
 export async function logoutRoute(req: Request, res: Response, next: NextFunction) {
-    await logout(req.session.sessionId);
+    await sessionDatabase.logoutSession(req.session.sessionId);
 
     req.session.loggedUserId = "";
     req.session.sessionId = undefined;
@@ -47,7 +46,7 @@ export async function userDetails(req: Request, res: Response, next: NextFunctio
     const loggedUserId = req.session.loggedUserId; 
 
     if( loggedUserId && ( loggedUserId !== "" ) ) {
-        const user : User = (await UserModel.findOne({ id: loggedUserId }) as unknown) as User;
+        const user : User = await userDatabase.getById(loggedUserId);
         try {
 
             res.send( { username: user.username, isAdmin: user.isAdmin } );
@@ -62,15 +61,7 @@ export async function userDetails(req: Request, res: Response, next: NextFunctio
 
 export async function registeredUsers(req: Request, res: Response, next: NextFunction) {
 
-    const users : User[] = (await UserModel.find() as unknown) as User[];
-  
-    var registered_users : RegisteredUser[] = await Promise.all(users.map( async (user) => (
-      {
-        username: user.username,
-        nofdevices: user.devices.length,
-        activesessions: (await SessionModel.find({ userId: user.id })).length
-      }
-    )));
+    const registered_users : RegisteredUser[] = await userDatabase.getRegisteredUsers();  
   
     res.send({ users: registered_users });
 
