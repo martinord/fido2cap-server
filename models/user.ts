@@ -56,6 +56,20 @@ class UserDatabase {
   }
 
   /**
+   * Get allowed credentials by username
+   */
+  public async getAllowCredentialsByUsername( username : string | undefined ) : Promise<PublicKeyCredentialDescriptor[]> {
+    
+    const user : User = await this.getByUsername(username);
+
+    return user ? user.devices.map(dev => ({
+      id: dev.credentialID,
+      type: 'public-key',
+      transports: dev.transports,
+    })) : [];
+  }
+
+  /**
    * Add a new user to the database 
    */
   public async registerNewUser( userId: string, username: string, device : AuthenticatorDevice ){

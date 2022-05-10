@@ -137,17 +137,26 @@ registration.post('/', async (req, res) => {
  * Login
  */
 authentication.get('/', async (req, res) => {
+
+    var username : string = req.query.username ? req.query.username as string : '';
+    var nonDiscoverable : boolean = (req.query.nonDiscoverable == "true");
+
+    username = DOMPurify.sanitize(username, {USE_PROFILES: {html: false}});
+
+    if(!isEmailAddress(username)) username = `${username}@${globalThis.rpID}`;
+    
     try {
         const opts: GenerateAuthenticationOptionsOpts = {
             timeout: 60000,
-            allowCredentials: [],
-            userVerification: 'required',
+            allowCredentials: nonDiscoverable ? await userDatabase.getAllowCredentialsByUsername(username) : [],
+            userVerification: nonDiscoverable ? 'discouraged' : 'required',
             rpID: globalThis.rpID,
         };
 
         const options = generateAuthenticationOptions(opts);
 
         req.session.challenge = options.challenge;
+        if(nonDiscoverable) req.session.userId = (await userDatabase.getByUsername(username)).id;
         
         res.send(options);
 
@@ -163,7 +172,7 @@ authentication.post('/', async (req, res) => {
         // You need to know the user by this point
 
         // First factor authentication gives the loggedUserId in the userHandle (resident credential)
-        const loggedUserId = body.response.userHandle;
+        const loggedUserId = body.response.userHandle || req.session.userId;
         const user : User = await userDatabase.getById(loggedUserId);
         
         const expectedChallenge = req.session.challenge;

@@ -14,9 +14,17 @@
 
       <div class="controls">
         <section id="authentication">
+          <div id="user" style="display: none;">
+            <label>Username</label>
+            <input id="username" type="text">
+          </div>
           <button id="btnAuthBegin">
             🔐&nbsp;Passwordless Login
           </button>
+          <div id="discoverable" style="margin-top: 1rem;">
+            <input id="nonDiscoverable" type="checkbox">
+            <label>Allow other authenticators</label>
+          </div>
           <p id="authSuccess" class="success"></p>
           <p id="authError" class="error"></p>
           <img id="authGif" class="loading" hidden="true" src="/loading.gif" alt="Authenticating...">
@@ -54,6 +62,15 @@
         document.querySelector('.systemError').innerText = "It seems this browser doesn't support WebAuthn...";
       } else {
 
+        /**
+         * Display non-discoverable options
+         */
+        document.querySelector('#nonDiscoverable').addEventListener('click', async () => {
+          const elemUser = document.querySelector('#user');
+          const elemNonDiscoverable = document.querySelector('#nonDiscoverable');
+          elemUser.style = elemNonDiscoverable.checked? "display: inline;" : "display: none;";
+        });
+
          /**
          * Authentication
          */
@@ -66,6 +83,10 @@
           const elemGif = document.querySelector('#authGif');
           const elemDebug = document.querySelector('#authDebug');
           const elemDetails = elemDebug.parentElement;
+          const elemUsername = document.querySelector('#username');
+          const elemUser = document.querySelector('#user');
+          const elemDiscoverable = document.querySelector('#discoverable');
+          const elemNonDiscoverable = document.querySelector('#nonDiscoverable');
 
           // Reset success/error messages
           elemSuccess.innerHTML = '';
@@ -73,7 +94,10 @@
           elemAuthInfo.innerHTML = '';
           elemDebug.innerHTML = '';
 
-          const resp = await fetch('/api/authentication');
+          const resp = await fetch('/api/authentication?' + new URLSearchParams({ 
+            'username' : elemUsername.value,
+            'nonDiscoverable' : elemNonDiscoverable.checked 
+          }));
 
           let asseResp;
           try {
@@ -92,6 +116,8 @@
           elemGif.hidden = false;
           elemButton.hidden = true;
           elemInfo.hidden = true;
+          elemDiscoverable.hidden = true;
+          elemUser.style = "display: none;";
           
           const verificationResp = await fetch('/api/authentication', {
             method: 'POST',
@@ -106,6 +132,7 @@
           elemGif.hidden = true;
           elemButton.hidden = false;
           elemInfo.hidden = false;
+          elemDiscoverable.hidden = false;
 
           const verificationJSON = await verificationResp.json();
           printDebug(elemDebug, 'Server Response', JSON.stringify(verificationJSON, null, 2));
