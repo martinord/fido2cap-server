@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const { ENABLE_HTTPS, SESSION_KEY, SESSION_EXPIRE_TIME } = process.env;
+const { SESSION_EXPIRE_TIME } = process.env;
 
 export class Session {
   
