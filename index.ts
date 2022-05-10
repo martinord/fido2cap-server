@@ -56,7 +56,8 @@ app.use(session({
  */
 
 if (CAPTIVE_PORTAL) {
-  console.log("Mode: CAPTIVE PORTAL. If openNDS is restarted, wait at least 60 seconds to authenticate.");
+  console.log("🧱 CAPTIVE PORTAL mode.");
+  console.log("🧱 If openNDS is restarted, wait at least 60 seconds to authenticate.")
   app.use(express.urlencoded({extended: true}));
   app.post('/', fas.authmonController);
   app.use(fas.clientController);
@@ -75,7 +76,7 @@ mongoose.connect('mongodb://localhost:27017/mydb', {
   maxPoolSize: 10,
   socketTimeoutMS: 45000,
   family: 4
-}).then((db) => console.log("db is connected")).catch((err) => console.log(err));
+}).then((db) => console.log("✅ Database is connected")).catch((err) => console.log(err));
 
 app.use('/api/registration', authorizeOnlyAdmin, webauthn.registration);
 app.use('/api/authentication', webauthn.authentication);
@@ -88,9 +89,9 @@ userDatabase.isAdministratorConfigured().then((admin) => {
   globalThis.administratorConfigured = admin;
   
   if(!admin) 
-    console.log("Admin is not registered! Please, register a user at /admin and assign admin role at the database")
+    console.log("⚠️ Admin is not registered! Please, register a user at /admin and assign admin role at the database")
   else 
-    console.log("admin is registered");  
+    console.log("✅ Admin is registered");  
 });
 
 if (ENABLE_HTTPS) {

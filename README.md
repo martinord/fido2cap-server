@@ -71,6 +71,8 @@ option sessiontimeout '<session duration in minutes>'
 
 In this configuration, we assume there is a FAS server at the IP `192.168.58.100` whose assigned domain name is `fas.localhost.pri`, with the corresponding TLS certificates that have been installed in openNDS and are accepted by the client.
 
+You can also add `FAS_DEBUG=true` to the `.env` file to enable debugging.
+
 #### Application `.env` file
 
 ```bash

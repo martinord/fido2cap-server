@@ -5,7 +5,7 @@ import { Session, sessionDatabase } from '../models/session';
 
 dotenv.config();
 
-const { CAPTIVE_PORTAL, FAS_SHARED_KEY } = process.env;
+const { CAPTIVE_PORTAL, FAS_SHARED_KEY, FAS_DEBUG } = process.env;
 
 /**
  * Middleware that decodes, decrypts and parses the request 
@@ -35,8 +35,10 @@ export function clientController (req : Request, res : Response, next : Function
 
         // Calculate and store rhid
         let rhid : string = crypto.createHash('sha256').update(hid+FAS_SHARED_KEY, 'utf8').digest().toString('hex');
-        console.log("[CLIENT Request] Request sent with HID: " + hid);
-        console.log("[ - CLIENT Request] Calculated RHID: " + rhid);
+        if(FAS_DEBUG){
+          console.log("[CLIENT Request] Request sent with HID: " + hid);
+          console.log("[ - CLIENT Request] Calculated RHID: " + rhid);
+        }
 
         // Store details in session
         req.session.rhid = rhid;
@@ -73,16 +75,16 @@ export async function authmonController (req: Request, res: Response) {
   
     if(!request.auth_get || !request.gatewayhash || !request.payload) return;
   
-    console.log("[Authmon Request] " + request.auth_get + " from " + request.gatewayhash);
+    if(FAS_DEBUG) console.log("[Authmon Request] " + request.auth_get + " from " + request.gatewayhash);
   
     switch (request.auth_get) {
       case "clear":
-        console.log("[ - Authmon Request CLEAR] The authlist is cleared!");
+        console.log("🟢 OpenNDS authlist cleared");
         await sessionDatabase.clearGatewaySessions(request.gatewayhash );
         break;
       
       case "list":
-        console.log("[ - Authmon Request LIST] The authlist should be sent and cleared! (UNDER IMPLEMENTATION)");
+        if(FAS_DEBUG) console.log("[ - Authmon Request LIST] The authlist should be sent and cleared! (UNDER IMPLEMENTATION)");
         // TODO: send not authenticated sessions and clear
         break;
   
@@ -94,7 +96,7 @@ export async function authmonController (req: Request, res: Response) {
         switch (request_payload) {
           case "*":
           case "none":
-            console.log("[ - Authmon Request VIEW] The list of authenticated clients is sent!");
+            if(FAS_DEBUG) console.log("[ - Authmon Request VIEW] The list of authenticated clients is sent!");
             let response : string = "";
             
             if ( sessions.length > 0 ) {
@@ -104,18 +106,18 @@ export async function authmonController (req: Request, res: Response) {
               });
             
               res.send(response);
-              console.log("[ -- Authmon Request VIEW] Authenticated client rhid list: " + response.replace(/(\r\n|\n|\r)/gm, ", "));
+              if(FAS_DEBUG) console.log("[ -- Authmon Request VIEW] Authenticated client rhid list: " + response.replace(/(\r\n|\n|\r)/gm, ", "));
             
             } else {
             
               res.send("*")
-              console.log("[ -- Authmon Request VIEW] No new authenticated clients ");
+              if(FAS_DEBUG) console.log("[ -- Authmon Request VIEW] No new authenticated clients ");
             
             }  
             break;
           
           default:
-            console.log("[ - Authmon Request VIEW] OpenNDS notification of authenticated clients!");
+            if(FAS_DEBUG) console.log("[ - Authmon Request VIEW] OpenNDS notification of authenticated clients!");
             let rhid_payload = request_payload.split("* ")[1] as string;
             let rhid_list = rhid_payload.split(" ") as string[];
   
@@ -123,7 +125,7 @@ export async function authmonController (req: Request, res: Response) {
               
               rhid_list.forEach( async (rhid:string) => {
                 await sessionDatabase.markAuthenticatedGatewaySession(request.gatewayhash, rhid);
-                console.log("[ -- Authmon Request VIEW] Confirmation of client authentication: " + rhid);
+                console.log("🔓 Confirmation of openNDS client authentication: " + rhid);
               });
   
               res.send("ack");
