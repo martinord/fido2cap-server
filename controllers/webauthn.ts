@@ -39,6 +39,7 @@ export const authentication : Router = Router();
 registration.get('/', async (req, res) => {
     try {
         var username : string = req.query.username ? req.query.username as string : 'user';
+        var nonDiscoverable : boolean = (req.query.nonDiscoverable == "true");
 
         username = DOMPurify.sanitize(username, {USE_PROFILES: {html: false}});
 
@@ -64,8 +65,9 @@ registration.get('/', async (req, res) => {
                 transports: dev.transports,
             })) : [],
             authenticatorSelection: {
-                userVerification: 'required',
-                residentKey: 'required'
+                requireResidentKey: !nonDiscoverable,
+                userVerification: nonDiscoverable? 'discouraged' : 'required',
+                residentKey: nonDiscoverable? 'discouraged' : 'required'
             },
             supportedAlgorithmIDs: [-7, -257],
         };

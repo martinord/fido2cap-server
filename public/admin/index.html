@@ -19,11 +19,17 @@
 
       <div class="controls">
         <section id="registration">
-          <label>Username</label>
-          <input id="username" type="text">
-          <button id="btnRegBegin">
-            🚪&nbsp;Register Security Key
-          </button>
+          <div>
+            <label>Username</label>
+            <input id="username" type="text">
+            <button id="btnRegBegin">
+              🚪&nbsp;Register Security Key
+            </button>
+            <div style="margin-top: 1rem;">
+              <input id="nonDiscoverable" type="checkbox">
+              <label>Non-discoverable credentials</label>
+            </div>
+          </div>
           <p id="regSuccess" class="success"></p>
           <p id="regError" class="error"></p>
           <table>
@@ -75,13 +81,17 @@
           const elemError = document.querySelector('#regError');
           const elemDebug = document.querySelector('#regDebug');
           const elemUsername = document.querySelector('#username');
+          const elemNonDiscoverable = document.querySelector('#nonDiscoverable');
 
           // Reset success/error messages
           elemSuccess.innerHTML = '';
           elemError.innerHTML = '';
           elemDebug.innerHTML = '';
 
-          const resp = await fetch('/api/registration?' + new URLSearchParams({ 'username' : elemUsername.value }));
+          const resp = await fetch('/api/registration?' + new URLSearchParams({ 
+            'username' : elemUsername.value,
+            'nonDiscoverable' : elemNonDiscoverable.checked 
+          }));
           elemUsername.disabled = true;
 
           let attResp;
