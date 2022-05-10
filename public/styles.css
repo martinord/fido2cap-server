@@ -74,6 +74,12 @@ table>caption {
   margin-bottom: 3rem;
 }
 
+.loading {
+  max-width: 8rem;
+  max-height: 8rem;
+  margin-top: 1rem;
+}
+
 /* Desktop Styles */
 @media (min-width: 75rem) {
   * {

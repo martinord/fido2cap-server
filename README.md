@@ -80,6 +80,7 @@ CAPTIVE_PORTAL=true
 FAS_SHARED_KEY=eaf50a8dafe491222e5e8e47099bca57
 ORIGIN=fas.localhost.pri
 HOST=192.168.58.100
+AUTH_DELAY=8
 ```
 
 #### openNDS configuration

@@ -53,8 +53,11 @@ export function clientController (req : Request, res : Response, next : Function
 
 export function redirection(req : Request, res : Response, next : Function) {
     // if the client has a valid authenticated session
-    if (req.session.loggedUserId && ( req.session.loggedUserId !== "" ) && req.session.originUrl)
-        res.redirect(307, req.session.originUrl);
+    if (req.session.loggedUserId && ( req.session.loggedUserId !== "" ) && req.session.originUrl) {
+      var url = req.session.originUrl;
+      delete req.session.originUrl // only redirect once
+      res.redirect(307, url);
+    }
     else
         next(); 
 }

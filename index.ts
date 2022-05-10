@@ -56,6 +56,7 @@ app.use(session({
  */
 
 if (CAPTIVE_PORTAL) {
+  console.log("Mode: CAPTIVE PORTAL. If openNDS is restarted, wait at least 60 seconds to authenticate.");
   app.use(express.urlencoded({extended: true}));
   app.post('/', fas.authmonController);
   app.use(fas.clientController);

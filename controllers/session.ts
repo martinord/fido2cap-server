@@ -2,20 +2,6 @@ import { Request, Response, NextFunction } from 'express';
 import { sessionDatabase } from '../models/session';
 import { User, userDatabase, RegisteredUser } from '../models/user';
 
-declare module "express-session" {
-    interface SessionData {
-      sessionId: string,
-      loggedUserId: string,
-      userId: string,
-      username: string,
-      challenge: string,
-      isAdmin: Boolean,
-      rhid: string,
-      gatewayHash: string,
-      originUrl: string
-    }
-  }
-
 /**
  * Session authorization Middleware
  */

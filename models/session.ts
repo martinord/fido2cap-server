@@ -1,9 +1,24 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { sleep } from '../helpers/session';
 
 dotenv.config();
 
-const { SESSION_EXPIRE_TIME } = process.env;
+const { SESSION_EXPIRE_TIME, CAPTIVE_PORTAL, AUTH_DELAY } = process.env;
+
+declare module "express-session" {
+  interface SessionData {
+    sessionId: string,
+    loggedUserId: string,
+    userId: string,
+    username: string,
+    challenge: string,
+    isAdmin: Boolean,
+    rhid: string,
+    gatewayHash: string,
+    originUrl: string
+  }
+}
 
 export class Session {
   
@@ -76,6 +91,10 @@ class SessionDatabase {
           gatewayHash: gatewayHash
         });
         const document = await session_db.save();
+
+        // wait to confirm authentication for captive portal URL redirection. 5 seconds by default
+        if(CAPTIVE_PORTAL) await sleep((AUTH_DELAY || 5) as number * 1000);
+
         return document.id;
     }
     return "";

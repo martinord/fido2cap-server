@@ -19,7 +19,9 @@
           </button>
           <p id="authSuccess" class="success"></p>
           <p id="authError" class="error"></p>
-          <div class="information">
+          <img id="authGif" class="loading" hidden="true" src="/loading.gif" alt="Authenticating...">
+          <p id="authInfo"></p>
+          <div id="information" class="information">
             <p>Use your <strong>Security key</strong> to login in one click.</p>
             <p><a href="/about">🔍&nbsp;Know more</a></p> 
           </div>
@@ -56,14 +58,19 @@
          * Authentication
          */
         document.querySelector('#btnAuthBegin').addEventListener('click', async () => {
+          const elemButton = document.querySelector('#btnAuthBegin');
+          const elemInfo = document.querySelector('#information');
           const elemSuccess = document.querySelector('#authSuccess');
+          const elemAuthInfo = document.querySelector('#authInfo');
           const elemError = document.querySelector('#authError');
+          const elemGif = document.querySelector('#authGif');
           const elemDebug = document.querySelector('#authDebug');
           const elemDetails = elemDebug.parentElement;
 
           // Reset success/error messages
           elemSuccess.innerHTML = '';
           elemError.innerHTML = '';
+          elemAuthInfo.innerHTML = '';
           elemDebug.innerHTML = '';
 
           const resp = await fetch('/api/authentication');
@@ -80,6 +87,12 @@
             throw new Error(error);
           }
 
+          // Wait for verification response
+          elemAuthInfo.innerHTML = 'Authenticating ...';
+          elemGif.hidden = false;
+          elemButton.hidden = true;
+          elemInfo.hidden = true;
+          
           const verificationResp = await fetch('/api/authentication', {
             method: 'POST',
             headers: {
@@ -87,6 +100,12 @@
             },
             body: JSON.stringify(asseResp),
           });
+
+          // Show elements
+          elemAuthInfo.innerHTML = '';
+          elemGif.hidden = true;
+          elemButton.hidden = false;
+          elemInfo.hidden = false;
 
           const verificationJSON = await verificationResp.json();
           printDebug(elemDebug, 'Server Response', JSON.stringify(verificationJSON, null, 2));
