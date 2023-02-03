@@ -14,8 +14,8 @@ Notice that TLS must be enabled, as it is a requirement of the WebAuthn standard
 
 ```bash
 npm install         # installs NPM dependencies
-npm build:styles    # builds the CSS styles
-npm build:webauthn  # downloads the WebAuthn library
+npm run build:styles    # builds the CSS styles
+npm run build:webauthn  # downloads the WebAuthn library
 npm run db          # run the database (docker-compose required)
 npm start           # starts the server
 ```
