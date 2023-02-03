@@ -43,7 +43,7 @@
       <p class="systemError"></p>
     </div>
     <script>
-      const { browserSupportsWebauthn, startAuthentication } = SimpleWebAuthnBrowser;
+      const { browserSupportsWebAuthn, startAuthentication } = SimpleWebAuthnBrowser;
 
       /**
        * A simple way to control how debug content is written to a debug console element
@@ -57,7 +57,7 @@
       }
 
       // Hide the Begin button if the browser is incapable of using WebAuthn
-      if (!browserSupportsWebauthn()) {
+      if (!SimpleWebAuthnBrowser.browserSupportsWebAuthn()) {
         document.querySelector('.controls').style.display = 'none';
         document.querySelector('.systemError').innerText = "It seems this browser doesn't support WebAuthn...";
       } else {
@@ -103,7 +103,7 @@
           try {
             const opts = await resp.json();
             printDebug(elemDebug, 'Authentication Options', JSON.stringify(opts, null, 2));
-            asseResp = await startAuthentication(opts);
+            asseResp = await SimpleWebAuthnBrowser.startAuthentication(opts);
             printDebug(elemDebug, 'Authentication Response', JSON.stringify(asseResp, null, 2));
           } catch (error) {
             elemError.innerText = error;
