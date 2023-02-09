@@ -14,7 +14,13 @@ services:
       - HOST=webauthn-server
       - SESSION_EXPIRE_TIME=5
       - MONGO_HOST=database
+    networks:
+      - backend
   database:
     image: "mongo:5.0.5"
-    ports:
-      - "127.0.0.1:27017-27019:27017-27019"
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
