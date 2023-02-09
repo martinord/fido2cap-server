@@ -124,6 +124,16 @@ config opennds
 - Notice that the development TLS certificates will not be valid. openNDS will not trust them by default. You need valid TLS certificates, like the ones issued by Let's Encrypt (Certbot).
 - The registered users in WebAuthn are tight to the FQDN. 
 
+## Docker deployment
+
+Review the `docker-compose.yml` file and configure the environment variables mentioned above. Then, execute:
+
+```bash
+docker-compose up -d
+```
+
+Remember to deploy the service through HTTPS with valid TLS certificates.
+
 ## Based on
 Based on the reference implementation of **@simplewebauthn/server** and **@simplewebauthn/browser**.
 

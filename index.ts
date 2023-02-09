@@ -27,13 +27,19 @@ declare global {
    */
   var rpID : string;
   var expectedOrigin : string;
+  
+  /**
+   * Configuration of the host domain name or IP for the database
+   */
+  var mongoHost: string;
 }
 
 const app = express();
 
-const { ENABLE_HTTPS, SESSION_KEY, SESSION_EXPIRE_TIME, CAPTIVE_PORTAL, ORIGIN, HOST } = process.env;
+const { ENABLE_HTTPS, SESSION_KEY, SESSION_EXPIRE_TIME, CAPTIVE_PORTAL, ORIGIN, HOST, MONGO_HOST } = process.env;
 
 globalThis.rpID = ORIGIN || 'localhost';
+globalThis.mongoHost = MONGO_HOST || 'localhost';
 
 /**
  * Session
@@ -70,7 +76,7 @@ app.use(express.json());
 /**
  * Database Connection (MongoDB)
  */
-mongoose.connect('mongodb://localhost:27017/mydb', {
+mongoose.connect(`mongodb://${mongoHost}:27017/mydb`, {
   serverSelectionTimeoutMS: 5000,
   autoIndex: true,
   maxPoolSize: 10,
@@ -94,7 +100,7 @@ userDatabase.isAdministratorConfigured().then((admin) => {
     console.log("✅ Admin is registered");  
 });
 
-if (ENABLE_HTTPS) {
+if (ENABLE_HTTPS != "false") {
   const host = HOST || '127.0.0.1';
   const port = 4443;
   // RP origin should always be HTTPS for WebAuthn to work
@@ -108,7 +114,7 @@ if (ENABLE_HTTPS) {
       },
       app,
     )
-    .listen(port, host, () => {
+    .listen(port, () => {
       console.log(`🚀 Server ready at ${expectedOrigin} (${host}:${port})`);
     });
 } else {
@@ -118,7 +124,7 @@ if (ENABLE_HTTPS) {
   // RP origin should always be HTTPS for WebAuthn to work
   globalThis.expectedOrigin = `https://${rpID}:${port}`;
 
-  http.createServer(app).listen(port, host, () => {
+  http.createServer(app).listen(port, () => {
     console.log(`🚀 Server ready at ${expectedOrigin} (${host}:${port})`);
   });
 }

@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  webauthn-server:
+    build: .
+    ports:
+      - "4443:4443"
+    environment:
+      - ENABLE_HTTPS=false
+      - SESSION_KEY=880676ec6b89063a31480f7cd8160023b3692e1d261cd1e7d3d1c35dd8656e7f9b075dd1e82f7b3de10265714c8b3c3e50accd25dd5fa67c51574da308020411
+      - CAPTIVE_PORTAL=false
+      - FAS_SHARED_KEY=
+      - ORIGIN=localhost
+      - HOST=webauthn-server
+      - SESSION_EXPIRE_TIME=5
+      - MONGO_HOST=database
+  database:
+    image: "mongo:5.0.5"
+    ports:
+      - "127.0.0.1:27017-27019:27017-27019"
