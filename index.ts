@@ -49,7 +49,7 @@ app.use(session({
   saveUninitialized: true,
   resave: true,
   cookie: { 
-    secure: ENABLE_HTTPS ? true : false,
+    secure: (ENABLE_HTTPS != "false") ? true : false,
     // Expiration time in minutes, set to 1h by default
     maxAge: ((SESSION_EXPIRE_TIME ?? 60) as number) * 60 * 1000
   }
