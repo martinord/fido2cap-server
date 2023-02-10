@@ -36,9 +36,9 @@ declare global {
 
 const app = express();
 
-const { ENABLE_HTTPS, SESSION_KEY, SESSION_EXPIRE_TIME, CAPTIVE_PORTAL, ORIGIN, HOST, MONGO_HOST } = process.env;
+const { ENABLE_HTTPS, SESSION_KEY, SESSION_EXPIRE_TIME, CAPTIVE_PORTAL, RP_ID, ORIGIN, HOST, MONGO_HOST } = process.env;
 
-globalThis.rpID = ORIGIN || 'localhost';
+globalThis.rpID = RP_ID || 'localhost';
 globalThis.mongoHost = MONGO_HOST || 'localhost';
 
 /**
@@ -104,7 +104,7 @@ if (ENABLE_HTTPS != "false") {
   const host = HOST || '127.0.0.1';
   const port = 4443;
   // RP origin should always be HTTPS for WebAuthn to work
-  globalThis.expectedOrigin = `https://${rpID}:${port}`;
+  globalThis.expectedOrigin = ORIGIN || `https://${rpID}:${port}`;
 
   https
     .createServer(
@@ -122,7 +122,7 @@ if (ENABLE_HTTPS != "false") {
   const host = HOST || '127.0.0.1';
   const port = 4443;
   // RP origin should always be HTTPS for WebAuthn to work
-  globalThis.expectedOrigin = `https://${rpID}:${port}`;
+  globalThis.expectedOrigin = ORIGIN ||`https://${rpID}:${port}`;
 
   http.createServer(app).listen(port, () => {
     console.log(`🚀 Server ready at ${expectedOrigin} (${host}:${port})`);

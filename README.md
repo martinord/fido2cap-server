@@ -44,7 +44,7 @@ For enabling it, you should specify some enironment variables first in the `.env
 ```bash
 CAPTIVE_PORTAL=true
 FAS_SHARED_KEY=<the shared secret of 32 bytes>
-ORIGIN=<your FQDN>
+RP_ID=<your FQDN>
 HOST=<your server ip address>
 SESSION_EXPIRE_TIME=<session duration in minutes>
 ```
@@ -80,7 +80,7 @@ SESSION_KEY=880676ec6b89063a31480f7cd8160023b3692e1d261cd1e7d3d1c35dd8656e7f9b07
 SESSION_EXPIRE_TIME=15
 CAPTIVE_PORTAL=true
 FAS_SHARED_KEY=eaf50a8dafe491222e5e8e47099bca57
-ORIGIN=fas.localhost.pri
+RP_ID=fas.localhost.pri
 HOST=192.168.58.100
 AUTH_DELAY=8
 ```
