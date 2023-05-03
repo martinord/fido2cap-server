@@ -4,110 +4,148 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="/index.es5.umd.min.js"></script>
+    <script src="/ua-parser.pack.js"></script>
     <link rel="stylesheet" href="/almond.lite.min.css" />
     <link rel="stylesheet" href="/styles.css" />
-    <title>WebAuthn Authentication Server</title>
+    <title>Authentication with Security Key</title>
   </head>
   <body>
     <div class="container">
-      <h1>WebAuthn Authentication Server</h1>
-
       <div class="controls">
-        <section id="authentication">
-          <div id="user" style="display: none;">
-            <label>Username</label>
+        <section id="userSection">
+          <h2>Who are you?</h2>
+          <div>
+            <p>Introduce your <strong>username</strong> and click next</p>
+          </div>
+          <div id="user">
             <input id="username" type="text">
           </div>
-          <button id="btnAuthBegin">
-            🔐&nbsp;Passwordless Login
-          </button>
-          <div id="discoverable" style="margin-top: 1rem;">
+          <div id="discoverable" style="margin: 2rem;">
             <input id="nonDiscoverable" type="checkbox">
-            <label>Allow other authenticators</label>
+            <label>👌&nbsp;I don't need a username</label>
           </div>
-          <p id="authSuccess" class="success"></p>
-          <p id="authError" class="error"></p>
+          <button id="btnUsername">
+            👉🏼&nbsp; Next
+          </button>
+          <p id="usernameError" class="error"></p>
+        </section>
+        <section id="authentication" hidden>
+          <h2>Use your Security Key</h2>
+          <button id="btnAuthBegin" style="margin-top: 1rem;">
+            🔐&nbsp; Start
+          </button>
           <img id="authGif" class="loading" hidden="true" src="/loading.gif" alt="Authenticating...">
           <p id="authInfo"></p>
           <div id="information" class="information">
             <p>Use your <strong>Security key</strong> to login in one click.</p>
             <p><a href="/about">🔍&nbsp;Know more</a></p> 
           </div>
-          <details closed hidden="true">
-            <summary>Debugging console</summary>
-            <textarea id="authDebug" spellcheck="false" readonly></textarea>
-          </details>
         </section>
       </div>
 
       <p class="systemError"></p>
+      <p id="authSuccess" class="success"></p>
+      <p id="authError" class="error"></p>
+
+      <button id="btnRedirectChrome" hidden="true" style="margin-top: 1rem;">
+        ↗️&nbsp;Open in another browser
+      </button>
+
     </div>
     <script>
       const { browserSupportsWebAuthn, startAuthentication } = SimpleWebAuthnBrowser;
 
+      const elemButton = document.querySelector('#btnAuthBegin');
+      const elemInfo = document.querySelector('#information');
+      const elemSuccess = document.querySelector('#authSuccess');
+      const elemAuthInfo = document.querySelector('#authInfo');
+      const elemError = document.querySelector('#authError');
+      const elemGif = document.querySelector('#authGif');
+      const elemUsername = document.querySelector('#username');
+      const elemUser = document.querySelector('#user');
+      const elemDiscoverable = document.querySelector('#discoverable');
+      const elemNonDiscoverable = document.querySelector('#nonDiscoverable');
+      const elemUserSection = document.querySelector('#userSection');
+      const elemAuthentication = document.querySelector('#authentication');
+      const elemUsernameError = document.querySelector('#usernameError');
+
       /**
-       * A simple way to control how debug content is written to a debug console element
+       * Show redirection button when the browser is not compatible
+       * 
        */
-      function printDebug(elemDebug, title, output) {
-        if (elemDebug.innerHTML !== '') {
-          elemDebug.innerHTML += '\n';
+      function showRedirect(error) {
+
+        if (error) elemError.hidden = false;
+
+        // Redirect depending on the OS
+        let os = new UAParser(window.navigator.userAgent).getOS().name;
+        let redirection_url = '';
+
+        if (os == "Android") {
+          redirection_url = 'android-app://com.android.chrome/https/'+ window.location.href.split('://')[1];
+        } else if (os == "iOS" || os == "macOS") {
+          redirection_url = 'googlechrome://' + window.location.href;
+        } else {
+          redirection_url = window.location.href;
         }
-        elemDebug.innerHTML += `// ${title}\n`;
-        elemDebug.innerHTML += `${output}\n`;
+
+        // Message
+        document.querySelector('.controls').style.display = 'none';
+        document.querySelector('.systemError').innerText = "Maybe this browser in " + os + " doesn't support Security Keys. Copy the URL in another browser or try the button below. 👇";
+
+        // Redirection button
+        document.querySelector('#btnRedirectChrome').hidden = false;
+        document.querySelector('#btnRedirectChrome').addEventListener('click', async () => {
+          window.open(redirection_url, '_blank');
+        });
       }
 
       // Hide the Begin button if the browser is incapable of using WebAuthn
-      if (!SimpleWebAuthnBrowser.browserSupportsWebAuthn()) {
-        document.querySelector('.controls').style.display = 'none';
-        document.querySelector('.systemError').innerText = "It seems this browser doesn't support WebAuthn...";
-      } else {
+      if (!SimpleWebAuthnBrowser.browserSupportsWebAuthn()) showRedirect(false)
+      else {
+
+        /**
+         * Get username
+         */
+         document.querySelector('#btnUsername').addEventListener('click', async () => {
+          
+          if(elemUsername.value != '' || elemNonDiscoverable.checked) {
+            elemUserSection.hidden = true;
+            elemAuthentication.hidden = false;
+          } else {
+            elemUsernameError.innerHTML = "Please, type your username or use the checkbox."
+          }
+        });
 
         /**
          * Display non-discoverable options
          */
         document.querySelector('#nonDiscoverable').addEventListener('click', async () => {
-          const elemUser = document.querySelector('#user');
-          const elemNonDiscoverable = document.querySelector('#nonDiscoverable');
-          elemUser.style = elemNonDiscoverable.checked? "display: inline;" : "display: none;";
+          elemUser.style = elemNonDiscoverable.checked? "display: none;" : "display: inline;";
         });
 
          /**
          * Authentication
          */
         document.querySelector('#btnAuthBegin').addEventListener('click', async () => {
-          const elemButton = document.querySelector('#btnAuthBegin');
-          const elemInfo = document.querySelector('#information');
-          const elemSuccess = document.querySelector('#authSuccess');
-          const elemAuthInfo = document.querySelector('#authInfo');
-          const elemError = document.querySelector('#authError');
-          const elemGif = document.querySelector('#authGif');
-          const elemDebug = document.querySelector('#authDebug');
-          const elemDetails = elemDebug.parentElement;
-          const elemUsername = document.querySelector('#username');
-          const elemUser = document.querySelector('#user');
-          const elemDiscoverable = document.querySelector('#discoverable');
-          const elemNonDiscoverable = document.querySelector('#nonDiscoverable');
 
           // Reset success/error messages
           elemSuccess.innerHTML = '';
           elemError.innerHTML = '';
           elemAuthInfo.innerHTML = '';
-          elemDebug.innerHTML = '';
 
           const resp = await fetch('/api/authentication?' + new URLSearchParams({ 
-            'username' : elemUsername.value,
-            'nonDiscoverable' : elemNonDiscoverable.checked 
+            'username' : elemUsername.value.toLowerCase(),
+            'nonDiscoverable' : !elemNonDiscoverable.checked 
           }));
 
           let asseResp;
           try {
             const opts = await resp.json();
-            printDebug(elemDebug, 'Authentication Options', JSON.stringify(opts, null, 2));
             asseResp = await SimpleWebAuthnBrowser.startAuthentication(opts);
-            printDebug(elemDebug, 'Authentication Response', JSON.stringify(asseResp, null, 2));
           } catch (error) {
-            elemError.innerText = error;
-            elemDetails.hidden = false;
+            elemError.innerHTML = 'Hum... we did something wrong! Reload or try another browser';
+            showRedirect(true);
             throw new Error(error);
           }
 
@@ -135,16 +173,13 @@
           elemDiscoverable.hidden = false;
 
           const verificationJSON = await verificationResp.json();
-          printDebug(elemDebug, 'Server Response', JSON.stringify(verificationJSON, null, 2));
 
           if (verificationJSON && verificationJSON.verified) {
             elemSuccess.innerHTML = `User authenticated!`;
             window.location = '/user/';
           } else {
-            elemError.innerHTML = `Oh no, something went wrong! Response: <pre>${JSON.stringify(
-              verificationJSON,
-            )}</pre>`;
-            elemDetails.hidden = false;
+            elemError.innerHTML = 'Hum... we did something wrong! Reload or try another browser';
+            showRedirect(true);
           }
         });
       }

@@ -89,7 +89,7 @@
           elemDebug.innerHTML = '';
 
           const resp = await fetch('/api/registration?' + new URLSearchParams({ 
-            'username' : elemUsername.value,
+            'username' : elemUsername.value.toLowerCase(),
             'nonDiscoverable' : elemNonDiscoverable.checked 
           }));
           elemUsername.disabled = true;
