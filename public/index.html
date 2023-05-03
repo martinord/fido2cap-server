@@ -84,7 +84,7 @@
         if (os == "Android") {
           redirection_url = 'android-app://com.android.chrome/https/'+ window.location.href.split('://')[1];
         } else if (os == "iOS" || os == "macOS") {
-          redirection_url = 'googlechrome://' + window.location.href;
+          redirection_url = 'googlechrome://' + window.location.href.split('://')[1];
         } else {
           redirection_url = window.location.href;
         }
