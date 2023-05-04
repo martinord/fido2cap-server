@@ -46,7 +46,10 @@
       <p class="systemError"></p>
       <p id="authSuccess" class="success"></p>
       <p id="authError" class="error"></p>
-
+      
+      <button id="btnReload" hidden="true" style="margin-top: 1rem;" onclick="window.location.reload();">
+        🔃&nbsp;Probar de nuevo
+      </button>
       <button id="btnRedirectChrome" hidden="true" style="margin-top: 1rem;">
         ↗️&nbsp;Abrir en otro navegador
       </button>
@@ -104,6 +107,7 @@
 
         // Redirection button
         document.querySelector('#btnRedirectChrome').hidden = false;
+        if(error) document.querySelector('#btnReload').hidden = false;
         document.querySelector('#btnRedirectChrome').addEventListener('click', async () => {
           window.open(redirection_url, '_blank');
         });
