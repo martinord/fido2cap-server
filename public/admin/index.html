@@ -6,39 +6,41 @@
     <script src="/index.es5.umd.min.js"></script>
     <link rel="stylesheet" href="/almond.lite.min.css" />
     <link rel="stylesheet" href="/styles.css" />
-    <title>WebAuthn Authentication Server</title>
+    <title>Interfaz de administración</title>
   </head>
   <body>
     <div class="container">
-      <h1>Administration interface</h1>
+      <h1>Interfaz de administración</h1>
 
       <div hidden id="forbidden">
-        <h2>Forbidden</h2>
-        <a href="/">Go back</a>
+        <h2>Acceso denegado</h2>
+        <a href="/">⬅️&nbsp;Volver atrás</a>
       </div>
 
       <div class="controls">
         <section id="registration">
           <div>
-            <label>Username</label>
+            <label>Nombre de usuario</label>
             <input id="username" type="text">
             <button id="btnRegBegin">
-              🚪&nbsp;Register Security Key
+              🚪&nbsp;Registrar
             </button>
             <div style="margin-top: 1rem;">
               <input id="nonDiscoverable" type="checkbox">
-              <label>Non-discoverable credentials</label>
+              <label>Requerir nombre de usuario</label>
             </div>
           </div>
           <p id="regSuccess" class="success"></p>
           <p id="regError" class="error"></p>
+          <br>
+          <a href="/user">⬅️&nbsp;Mi usuario</a>
           <table>
-            <caption>Registered Users</caption>
+            <caption>Usuarios registrados</caption>
             <thead>
               <tr>
-                <th>Username</th>
-                <th>Registered Devices</th>
-                <th>Active sessions</th>
+                <th>Nombre</th>
+                <th>Llaves registradas</th>
+                <th>Sesiones activas</th>
                 <th>Admin</th>
               </tr>
             </thead>
@@ -46,7 +48,7 @@
             </tbody>
           </table>
           <details closed>
-            <summary>Debugging console</summary>
+            <summary>Consola de depuración</summary>
             <textarea id="regDebug" spellcheck="false" readonly></textarea>
           </details>
         </section>

@@ -5,19 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="/almond.lite.min.css" />
     <link rel="stylesheet" href="/styles.css" />
-    <title>WebAuthn Authentication Server</title>
+    <title>Panel de usuario</title>
   </head>
   <body>
     <div class="container">
-      <h1>User Dashboard</h1>
-      <h2 id="username">You are not logged in</h2>
+      <h1>Panel de usuario</h1>
+      <h2 id="username">No te has autenticado</h2>
       <button hidden id="btnLogout" onclick="window.location='/logout'">
-        Logout
+        Salir
       </button>
       <button hidden id="btnAdmin" onclick="window.location='/admin'">
-        Admin Interface
+        Panel de administrador
       </button>
-      <a href="/">Go back</a>
+      <a href="/">⬅️&nbsp;Volver atrás</a>
 
       <p class="systemError"></p>
     </div>
@@ -25,7 +25,7 @@
       fetch('/api/user-details').then( async function(login) {
         let user = await login.json();
         if (user) {
-          document.querySelector('#username').innerHTML = `Welcome, ${ user.username }!`;
+          document.querySelector('#username').innerHTML = `¡Hola, ${ user.username }!`;
           document.querySelector('#btnLogout').hidden = false;
           if(user.isAdmin)
             document.querySelector('#btnAdmin').hidden = false;

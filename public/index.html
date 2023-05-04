@@ -7,38 +7,38 @@
     <script src="/ua-parser.pack.js"></script>
     <link rel="stylesheet" href="/almond.lite.min.css" />
     <link rel="stylesheet" href="/styles.css" />
-    <title>Authentication with Security Key</title>
+    <title>Autenticación con llave de seguridad</title>
   </head>
   <body>
     <div class="container">
       <div class="controls">
         <section id="userSection">
-          <h2>Who are you?</h2>
+          <h2>¡Hola! ¿Quien eres?</h2>
           <div>
-            <p>Introduce your <strong>username</strong> and click next</p>
+            <p>Introduce tu <strong>nombre de usuario</strong> y pulsa continuar</p>
           </div>
           <div id="user">
             <input id="username" type="text">
           </div>
           <div id="discoverable" style="margin: 2rem;">
             <input id="nonDiscoverable" type="checkbox">
-            <label>👌&nbsp;I don't need a username</label>
+            <label>👌&nbsp;No necesito un nombre de usuario</label>
           </div>
           <button id="btnUsername">
-            👉🏼&nbsp; Next
+            👉🏼&nbsp; Continuar
           </button>
           <p id="usernameError" class="error"></p>
         </section>
         <section id="authentication" hidden>
-          <h2>Use your Security Key</h2>
+          <h2>Usa tu Llave de Seguridad</h2>
           <button id="btnAuthBegin" style="margin-top: 1rem;">
-            🔐&nbsp; Start
+            🔐&nbsp; Empezar
           </button>
-          <img id="authGif" class="loading" hidden="true" src="/loading.gif" alt="Authenticating...">
+          <img id="authGif" class="loading" hidden="true" src="/loading.gif" alt="Atenticando...">
           <p id="authInfo"></p>
           <div id="information" class="information">
-            <p>Use your <strong>Security key</strong> to login in one click.</p>
-            <p><a href="/about">🔍&nbsp;Know more</a> <a href="/">⬅️&nbsp;Go back</a></p>
+            <p>Usa tu <strong>Llave de Seguridad</strong> para entrar en un click.</p>
+            <p><a href="/about">🔍&nbsp;Saber más</a> <a href="/">⬅️&nbsp;Volver atrás</a></p>
           </div>
         </section>
       </div>
@@ -48,7 +48,7 @@
       <p id="authError" class="error"></p>
 
       <button id="btnRedirectChrome" hidden="true" style="margin-top: 1rem;">
-        ↗️&nbsp;Open in another browser
+        ↗️&nbsp;Abrir en otro navegador
       </button>
 
     </div>
@@ -100,7 +100,7 @@
 
         // Message
         document.querySelector('.controls').style.display = 'none';
-        document.querySelector('.systemError').innerText = "Maybe this browser in " + os + " doesn't support Security Keys. Copy the URL in another browser or try the button below. 👇";
+        document.querySelector('.systemError').innerText = "Puede que este navegador en " + os + " no soporte las Llaves de Seguridad. Copia la URL en otro navegador o prueba el siguiente botón. 👇";
 
         // Redirection button
         document.querySelector('#btnRedirectChrome').hidden = false;
@@ -122,7 +122,7 @@
             elemUserSection.hidden = true;
             elemAuthentication.hidden = false;
           } else {
-            elemUsernameError.innerHTML = "Please, type your username or use the checkbox."
+            elemUsernameError.innerHTML = "Por favor, escribe tu nombre de usuario o marca la casilla."
           }
         });
 
@@ -154,19 +154,19 @@
             asseResp = await SimpleWebAuthnBrowser.startAuthentication(opts);
           } catch (error) {
             if (error.name == "InvalidStateError") {
-              showError("We don't know that Security Key. Is is registered?");
+              showError("No conocemos esa Llave de Seguridad. Está registrada?");
             } else if (error.name == "NotAllowedError") {
-              showError("User has cancelled the operation or no Security Key was found. Try again!")
+              showError("Se ha cancelado la operación o puede que no se haya encontrado la Llave de Seguridad. ¡Prueba de nuevo!")
               showRedirect(true);
             } else {
-              showError('Hum... we did something wrong! Reload or try another browser');
+              showError('Vaya... ¡parece que hemos hecho algo mal! ¡Prueba de nuevo!');
               showRedirect(true);
             }
             throw new Error(error);
           }
 
           // Wait for verification response
-          elemAuthInfo.innerHTML = 'Authenticating ...';
+          elemAuthInfo.innerHTML = 'Verificando tu identidad ...';
           elemGif.hidden = false;
           elemButton.hidden = true;
           elemInfo.hidden = true;
@@ -191,10 +191,10 @@
           const verificationJSON = await verificationResp.json();
 
           if (verificationJSON && verificationJSON.verified) {
-            elemSuccess.innerHTML = `User authenticated!`;
+            elemSuccess.innerHTML = `¡Usuario autenticado!`;
             window.location = '/user/';
           } else {
-            showError('Hum... we did something wrong! Reload or try another browser');
+            showError('Vaya... ¡parece que hemos hecho algo mal! Prueba de nuevo!');
             showRedirect(true);
           }
         });
