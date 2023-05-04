@@ -155,6 +155,8 @@
           } catch (error) {
             if (error.name == "InvalidStateError") {
               showError("We don't know that Security Key. Is is registered?");
+            } else if (error.name == "NotAllowedError") {
+              showError("User has cancelled the operation or no Security Key was found. Try again!")
             } else {
               showError('Hum... we did something wrong! Reload or try another browser');
               showRedirect(true);
