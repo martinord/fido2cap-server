@@ -62,7 +62,7 @@ table>caption {
 }
 
 .error {
-  color: red;
+  color: rgb(28, 94, 133);
 }
 
 .success {

@@ -79,7 +79,7 @@ registration.get('/', async (req, res) => {
         res.send(options);
 
     } catch (error) {
-        res.status(500).send("User is not registered in the database");
+        res.status(500).send("Looks we did something wrong ...");
     }  
 });
 
@@ -129,7 +129,7 @@ registration.post('/', async (req, res) => {
             res.send({ verified });
         }
     } catch (error) {
-        res.status(500).send("User is not registered in the database");
+        res.status(500).send("Looks we did something wrong ...");
     }
 });
 
@@ -156,12 +156,14 @@ authentication.get('/', async (req, res) => {
         const options = generateAuthenticationOptions(opts);
 
         req.session.challenge = options.challenge;
-        if(nonDiscoverable) req.session.userId = (await userDatabase.getByUsername(username)).id;
+        var user = await userDatabase.getByUsername(username);
+        if(nonDiscoverable && user) req.session.userId = user.id;
         
         res.send(options);
 
     } catch (error) {
-        res.status(500).send("User is not registered in the database");
+        console.log(error);
+        res.status(500).send(error);
     }
 });
 
@@ -227,7 +229,7 @@ authentication.post('/', async (req, res) => {
         res.send({ verified });
 
     } catch (error) {
-        res.status(500).send("User is not registered in the database");
+        res.status(500).send("Looks we did something wrong ...");
     }
 });
 

@@ -70,6 +70,15 @@
       const elemUsernameError = document.querySelector('#usernameError');
 
       /**
+       * Shows an error on the screen
+       */
+      function showError(message) {
+        elemError.innerHTML = message;
+        elemAuthentication.hidden = true;
+        elemUserSection.hidden = true;
+      }
+
+      /**
        * Show redirection button when the browser is not compatible
        * 
        */
@@ -144,8 +153,12 @@
             const opts = await resp.json();
             asseResp = await SimpleWebAuthnBrowser.startAuthentication(opts);
           } catch (error) {
-            elemError.innerHTML = 'Hum... we did something wrong! Reload or try another browser';
-            showRedirect(true);
+            if (error.name == "InvalidStateError") {
+              showError("We don't know that Security Key. Is is registered?");
+            } else {
+              showError('Hum... we did something wrong! Reload or try another browser');
+              showRedirect(true);
+            }
             throw new Error(error);
           }
 
