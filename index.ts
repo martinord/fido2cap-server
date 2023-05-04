@@ -36,7 +36,7 @@ declare global {
 
 const app = express();
 
-const { ENABLE_HTTPS, SESSION_KEY, SESSION_EXPIRE_TIME, CAPTIVE_PORTAL, RP_ID, ORIGIN, HOST, MONGO_HOST } = process.env;
+const { ENABLE_HTTPS, SESSION_KEY, SESSION_EXPIRE_TIME, CAPTIVE_PORTAL, DISABLE_PORTAL_REDIRECTION, RP_ID, ORIGIN, HOST, MONGO_HOST } = process.env;
 
 globalThis.rpID = RP_ID || 'localhost';
 globalThis.mongoHost = MONGO_HOST || 'localhost';
@@ -67,7 +67,7 @@ if (CAPTIVE_PORTAL) {
   app.use(express.urlencoded({extended: true}));
   app.post('/', fas.authmonController);
   app.use(fas.clientController);
-  app.use(fas.redirection);
+  if(!DISABLE_PORTAL_REDIRECTION) app.use(fas.redirection);
 }
 
 app.use(express.static('./public/'));
