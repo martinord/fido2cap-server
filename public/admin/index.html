@@ -39,6 +39,7 @@
                 <th>Username</th>
                 <th>Registered Devices</th>
                 <th>Active sessions</th>
+                <th>Admin</th>
               </tr>
             </thead>
             <tbody id="registered-users-table">
@@ -134,6 +135,22 @@
       }
 
       /**
+      * Update user admin state
+      */
+      async function makeAdmin() {
+        fetch('/api/make-admin', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              username: this.id,
+              isAdmin: this.checked
+            }),
+          });
+      }
+
+      /**
       * Fetch registered users
       */
       fetch('/api/registered-users').then( async function(response) {
@@ -145,8 +162,14 @@
             elemTable.innerHTML += 
               "<td>" + user.username + "</td>" +
               "<td>" + user.nofdevices + "</td>" +
-              "<td>" + user.activesessions + "</td>";
+              "<td>" + user.activesessions + "</td>" +
+              "<td>" + "<input type=checkbox class=makeAdmin id=" + user.username + (user.isAdmin? " checked" : "") + ">" + "<td>";
+            
           })
+
+          document.querySelectorAll('.makeAdmin').forEach(function(checkbox){
+            checkbox.addEventListener('change', makeAdmin);
+          });
         } else {
           document.querySelector('#forbidden').hidden = false;
           document.querySelector('#registration').hidden = true;

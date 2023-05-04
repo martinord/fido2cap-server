@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { sessionDatabase } from '../models/session';
-import { User, userDatabase, RegisteredUser } from '../models/user';
+import { User, userDatabase, RegisteredUser, AdminUser } from '../models/user';
 
 /**
  * Session authorization Middleware
@@ -45,6 +45,18 @@ export async function userDetails(req: Request, res: Response, next: NextFunctio
     }
 }
 
+export async function makeAdmin(req: Request, res: Response, next: NextFunction) {
+    const user : AdminUser = req.body;
+
+    try {
+        if (user.username) await userDatabase.updateAdminUser(user.username, user.isAdmin);
+    } catch (error) {
+        res.status(500).send("Something went wrong!")
+    }
+
+    res.status(200).send();
+}
+
 export async function registeredUsers(req: Request, res: Response, next: NextFunction) {
 
     const registered_users : RegisteredUser[] = await userDatabase.getRegisteredUsers();  
@@ -53,4 +65,4 @@ export async function registeredUsers(req: Request, res: Response, next: NextFun
 
 }
 
-module.exports = { authorizeOnlyAdmin, logoutRoute, registeredUsers, userDetails }
+module.exports = { authorizeOnlyAdmin, logoutRoute, registeredUsers, userDetails, makeAdmin }

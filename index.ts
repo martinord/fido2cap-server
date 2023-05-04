@@ -12,7 +12,7 @@ dotenv.config();
 
 import * as fas from './controllers/fas';
 import * as webauthn from './controllers/webauthn';
-import { authorizeOnlyAdmin, logoutRoute, registeredUsers, userDetails } from './controllers/session';
+import { authorizeOnlyAdmin, logoutRoute, registeredUsers, userDetails, makeAdmin } from './controllers/session';
 import { userDatabase } from './models/user';
 
 declare global {
@@ -89,6 +89,7 @@ app.use('/api/authentication', webauthn.authentication);
 
 app.use('/api/user-details', userDetails);
 app.use('/api/registered-users', authorizeOnlyAdmin, registeredUsers);
+app.post('/api/make-admin', authorizeOnlyAdmin, makeAdmin)
 app.use('/logout', logoutRoute);
 
 userDatabase.isAdministratorConfigured().then((admin) => {

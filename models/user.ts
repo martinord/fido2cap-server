@@ -36,7 +36,8 @@ class UserDatabase {
       {
         username: user.username,
         nofdevices: user.devices.length,
-        activesessions: (await sessionDatabase.getByUserId(user.id)).length
+        activesessions: (await sessionDatabase.getByUserId(user.id)).length,
+        isAdmin: user.isAdmin
       }
     )));
   }
@@ -106,6 +107,18 @@ class UserDatabase {
   }
 
   /**
+   * Make a user admin or remove admin rights
+   */
+  public async updateAdminUser( username: string, isAdmin : Boolean ) {
+
+    var user : User = await this.getByUsername(username);
+    
+    if (user) {
+      await this.userModel.updateOne({ id: user.id }, { $set: { isAdmin: isAdmin } });
+    }
+  }
+
+  /**
    * Generate a new random user id
    */
   public async generateRandomUserId(): Promise<string> {
@@ -145,7 +158,13 @@ export const userDatabase = new UserDatabase(mongoose.model('User', userSchema))
 export declare type RegisteredUser = {
   username?: string,
   nofdevices?: number,
-  activesessions?: number
+  activesessions?: number,
+  isAdmin?: Boolean
 };
+
+export declare type AdminUser = {
+  username: string,
+  isAdmin: Boolean
+}
 
 module.exports = { User, userDatabase };
