@@ -193,7 +193,7 @@
             elemSuccess.innerHTML = `User authenticated!`;
             window.location = '/user/';
           } else {
-            elemError.innerHTML = 'Hum... we did something wrong! Reload or try another browser';
+            showError('Hum... we did something wrong! Reload or try another browser');
             showRedirect(true);
           }
         });
