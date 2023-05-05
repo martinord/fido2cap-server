@@ -9,15 +9,22 @@
   </head>
   <body>
     <div class="container">
-      <h1>Panel de usuario</h1>
-      <h2 id="username">No te has autenticado</h2>
+      <div id="correct" hidden="true">
+        <h2>¡Genial! Ya tienes conexión a Internet</h2>
+        <div>
+          <img src="/img/correct.webp" alt="¡Todo correcto!" width="200">
+        </div>
+      </div>
+      <p id="username">¡Vaya! Debes autenticarte</p>
       <button hidden id="btnLogout" onclick="window.location='/logout'">
         Cerrar sesión
       </button>
       <button hidden id="btnAdmin" onclick="window.location='/admin'">
         Panel de administrador
       </button>
-      <a href="/">⬅️&nbsp;Volver atrás</a>
+      <div style="margin: 10px;">
+        <a href="/">⬅️&nbsp;Volver al inicio</a>
+      </div>
 
       <p class="systemError"></p>
     </div>
@@ -25,8 +32,9 @@
       fetch('/api/user-details').then( async function(login) {
         let user = await login.json();
         if (user) {
-          document.querySelector('#username').innerHTML = `¡Hola, ${ user.username }!`;
+          document.querySelector('#username').innerHTML = `Tu usuario es ${ user.username }, y te has conectado correctamente.`;
           document.querySelector('#btnLogout').hidden = false;
+          document.querySelector('#correct').hidden = false;
           if(user.isAdmin)
             document.querySelector('#btnAdmin').hidden = false;
         }
