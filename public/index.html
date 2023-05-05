@@ -15,6 +15,9 @@
         <section id="userSection">
           <h2>¡Hola! ¿Quien eres?</h2>
           <div>
+            <img src="img/people.webp" alt="Una persona sujetando una llave" width="200">
+          </div>
+          <div>
             <p>Introduce tu <strong>nombre de usuario</strong> y pulsa continuar</p>
           </div>
           <div id="user">
@@ -31,10 +34,13 @@
         </section>
         <section id="authentication" hidden>
           <h2>Usa tu Llave de Seguridad</h2>
+          <div>
+            <img src="img/security-key.webp" alt="Una persona sujetando una llave" width="200">
+          </div>
           <button id="btnAuthBegin" style="margin-top: 1rem;">
             🔐&nbsp; Empezar
           </button>
-          <img id="authGif" class="loading" hidden="true" src="/loading.gif" alt="Atenticando...">
+          <img id="authGif" class="loading" hidden="true" src="/loading.gif" alt="Atenticando..." width="200">
           <p id="authInfo"></p>
           <div id="information" class="information">
             <p>Usa tu <strong>Llave de Seguridad</strong> para entrar en un click.</p>
@@ -45,6 +51,9 @@
 
       <p class="systemError"></p>
       <p id="authSuccess" class="success"></p>
+      <div id="imgError" hidden>
+        <img src="img/error.png" alt="Persona confundida" width="200">
+      </div>
       <p id="authError" class="error"></p>
       
       <button id="btnReload" hidden="true" style="margin-top: 1rem;" onclick="window.location.reload();">
@@ -71,12 +80,14 @@
       const elemUserSection = document.querySelector('#userSection');
       const elemAuthentication = document.querySelector('#authentication');
       const elemUsernameError = document.querySelector('#usernameError');
+      const elemImgError = document.querySelector('#imgError');
 
       /**
        * Shows an error on the screen
        */
       function showError(message) {
         elemError.innerHTML = message;
+        elemImgError.hidden = false;
         elemAuthentication.hidden = true;
         elemUserSection.hidden = true;
       }
@@ -87,7 +98,10 @@
        */
       function showRedirect(error) {
 
-        if (error) elemError.hidden = false;
+        if (error) {
+          elemError.hidden = false;
+          elemImgError.hidden = false;
+        }
 
         // Redirect depending on the OS
         let os = new UAParser(window.navigator.userAgent).getOS().name;
