@@ -222,14 +222,19 @@
           elemInfo.hidden = false;
           elemDiscoverable.hidden = false;
 
-          const verificationJSON = await verificationResp.json();
+          try {
+            const verificationJSON = await verificationResp.json();
 
-          if (verificationJSON && verificationJSON.verified) {
-            elemSuccess.innerHTML = `¡Usuario autenticado!`;
-            window.location = '/user/';
-          } else {
-            showRedirect("Vaya, parece que algo ha fallado", "¡Asegúrate de no mover la llave durante el proceso!");
+            if (verificationJSON && verificationJSON.verified) {
+              elemSuccess.innerHTML = `¡Usuario autenticado!`;
+              window.location = '/user/';
+            } else {
+              showRedirect("No hemos podido verificar tu identidad", "Puede que algo falle o que esta llave ya no esté registrada. ¡Asegúrate de no mover la llave durante el proceso!");
+            }
+          } catch (error) {
+            showRedirect("No hemos podido verificar tu identidad", "Puede que algo falle o que esta llave ya no esté registrada. ¡Asegúrate de no mover la llave durante el proceso!");
           }
+          
         });
       }
 
