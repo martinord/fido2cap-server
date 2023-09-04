@@ -49,12 +49,16 @@
         </section>
       </div>
 
-      <p class="systemError"></p>
       <p id="authSuccess" class="success"></p>
+
+      <h2 id="error" hidden>¡Vaya! Algo ha fallado</h2>
+      <h4 id="errorTitle"></h4>
       <div id="imgError" hidden>
         <img src="img/error.png" alt="Persona confundida" width="200">
       </div>
-      <p id="authError" class="error"></p>
+
+      <p id="errorDetail" class="error"></p>
+      <p id="errorRedirect" class="error"></p>
       
       <button id="btnReload" hidden="true" style="margin-top: 1rem;" onclick="window.location.reload();">
         🔃&nbsp;Probar de nuevo
@@ -71,7 +75,10 @@
       const elemInfo = document.querySelector('#information');
       const elemSuccess = document.querySelector('#authSuccess');
       const elemAuthInfo = document.querySelector('#authInfo');
-      const elemError = document.querySelector('#authError');
+      const elemError = document.querySelector('#error');
+      const elemErrorDetail = document.querySelector('#errorDetail');
+      const elemErrorRedirect = document.querySelector('#errorRedirect');
+      const elemErrorTitle = document.querySelector('#errorTitle');
       const elemGif = document.querySelector('#authGif');
       const elemUsername = document.querySelector('#username');
       const elemUser = document.querySelector('#user');
@@ -85,9 +92,13 @@
       /**
        * Shows an error on the screen
        */
-      function showError(message) {
-        elemError.innerHTML = message;
+      function showError(title, message) {
+        elemErrorTitle.innerHTML = title || "Operación cancelada";
+        elemErrorDetail.innerHTML = message;
+
+        elemError.hidden = false;
         elemImgError.hidden = false;
+
         elemAuthentication.hidden = true;
         elemUserSection.hidden = true;
       }
@@ -96,12 +107,7 @@
        * Show redirection button when the browser is not compatible
        * 
        */
-      function showRedirect(error) {
-
-        if (error) {
-          elemError.hidden = false;
-          elemImgError.hidden = false;
-        }
+      function showRedirect(title, message) {
 
         // Redirect depending on the OS
         let os = new UAParser(window.navigator.userAgent).getOS().name;
@@ -117,7 +123,7 @@
 
         // Message
         document.querySelector('.controls').style.display = 'none';
-        document.querySelector('.systemError').innerText = "Puede que este navegador en " + os + " no soporte las Llaves de Seguridad. Copia la URL en otro navegador o prueba el siguiente botón. 👇";
+        elemErrorRedirect.innerHTML = "Puede que este navegador en " + os + " no soporte las Llaves de Seguridad. Copia la URL en otro navegador o prueba el siguiente botón. 👇";
 
         // Redirection button
         document.querySelector('#btnRedirectChrome').hidden = false;
@@ -125,6 +131,11 @@
         document.querySelector('#btnRedirectChrome').addEventListener('click', async () => {
           window.open(redirection_url, '_blank');
         });
+
+        // Show error message
+        if (message) {
+          showError(title, message);
+        }
       }
 
       // Hide the Begin button if the browser is incapable of using WebAuthn
@@ -162,7 +173,8 @@
 
           // Reset success/error messages
           elemSuccess.innerHTML = '';
-          elemError.innerHTML = '';
+          elemErrorTitle.innerHTML = '';
+          elemErrorDetail.innerHTML = '';
           elemAuthInfo.innerHTML = '';
 
           const resp = await fetch('/api/authentication?' + new URLSearchParams({ 
@@ -176,13 +188,11 @@
             asseResp = await SimpleWebAuthnBrowser.startAuthentication(opts);
           } catch (error) {
             if (error.name == "InvalidStateError") {
-              showError("No conocemos esa Llave de Seguridad. Está registrada?");
+              showError("Llave de Seguridad desconocida", "No conocemos esa Llave de Seguridad. ¿Está registrada?");
             } else if (error.name == "NotAllowedError") {
-              showError("Se ha cancelado la operación o puede que no se haya encontrado la Llave de Seguridad. ¡Prueba de nuevo!")
-              showRedirect(true);
+              showRedirect("No hemos encontrado la Llave de Seguridad", "Se ha cancelado la operación o puede que no se haya encontrado la Llave de Seguridad. ¡Prueba de nuevo!");
             } else {
-              showError('Vaya... ¡parece que hemos hecho algo mal! ¡Prueba de nuevo!');
-              showRedirect(true);
+              showRedirect("Operación cancelada", "Vaya... parece que hemos hecho algo mal. ¡Prueba de nuevo!");
             }
             throw new Error(error);
           }
