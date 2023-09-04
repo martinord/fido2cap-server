@@ -15,7 +15,7 @@
   --secondary-bg: #efefef;
   --input-bg: #efefef;
   --font-color: #1c2128;
-  --font-family: 'Courier New', Courier, monospace;
+  --font-family: "Open Sans", sans-serif;;
   --font-size-root: calc(12px + 0.2vw);
   --font-weight-normal: 400;
   --border-radius: 0.25rem;
