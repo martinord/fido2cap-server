@@ -20,9 +20,9 @@
   --font-weight-normal: 400;
   --border-radius: 0.25rem;
   --heading-margin: 1.5rem 0 3rem;
-  /* Fixes */
-  --primary-lighter: hsl(var(--primaryH), var(--primaryS), 30%);
-  --secondary-lighter: hsl(var(--secondaryH), var(--secondaryS), 15%);
+  /* Fixes dark mode*/
+  /* --primary-lighter: hsl(var(--primaryH), var(--primaryS), 30%);
+  --secondary-lighter: hsl(var(--secondaryH), var(--secondaryS), 15%); */
 }
 
 body {
