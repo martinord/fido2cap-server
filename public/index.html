@@ -96,7 +96,6 @@
         elemErrorTitle.innerHTML = title || "Operación cancelada";
         elemErrorDetail.innerHTML = message;
 
-        // elemError.hidden = false;
         elemImgError.hidden = false;
 
         elemAuthentication.hidden = true;
@@ -193,7 +192,7 @@
             if (error.name == "InvalidStateError") {
               showError("Humm... Llave de Seguridad desconocida", "No conocemos esa Llave de Seguridad. ¿Está registrada?");
             } else if (error.name == "NotAllowedError") {
-              showRedirect("¡Vaya! No hemos encontrado tu Llave de Seguridad", "Se ha cancelado la operación o puede que no se haya encontrado la Llave de Seguridad que has registrad. ¡Prueba de nuevo o utiliza otra Llave!");
+              showRedirect("¡Vaya! No hemos encontrado tu Llave de Seguridad", "Se ha cancelado la operación o puede que no se haya encontrado la Llave de Seguridad que has registrado. ¡Prueba de nuevo o utiliza otra llave!");
             } else {
               showRedirect("¡Oh! Operación cancelada", "Vaya... parece que algo no ha ido bien. ¡Inténtalo de nuevo!");
             }
