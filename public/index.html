@@ -180,11 +180,11 @@
           elemAuthInfo.innerHTML = '';
 
           const resp = await fetch('/api/authentication?' + new URLSearchParams({ 
-            'username' : elemUsername.value.toLowerCase(),
+            'username' : elemUsername.value.toLowerCase().trim(),
             'nonDiscoverable' : !elemNonDiscoverable.checked 
           }));
 
-          localStorage.setItem('username', elemUsername.value.toLowerCase());
+          localStorage.setItem('username', elemUsername.value.toLowerCase().trim());
 
           let asseResp;
           try {
