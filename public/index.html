@@ -158,6 +158,7 @@
         document.querySelector('#username').addEventListener('keydown', (event) => {
           if (event.keyCode === 13) getUsername(); // user presses enter
         });
+        document.querySelector('#username').value = localStorage.getItem('username');
 
         /**
          * Display non-discoverable options
@@ -181,6 +182,8 @@
             'username' : elemUsername.value.toLowerCase(),
             'nonDiscoverable' : !elemNonDiscoverable.checked 
           }));
+
+          localStorage.setItem('username', elemUsername.value.toLowerCase());
 
           let asseResp;
           try {
