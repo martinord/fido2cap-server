@@ -51,13 +51,13 @@
 
       <p id="authSuccess" class="success"></p>
 
-      <h2 id="error" hidden>¡Vaya! Algo ha fallado</h2>
-      <h4 id="errorTitle"></h4>
+      <h2 id="errorTitle"></h2>
+      <p id="errorDetail" class="error"></p>
+
       <div id="imgError" hidden>
         <img src="img/error.png" alt="Persona confundida" width="200">
       </div>
 
-      <p id="errorDetail" class="error"></p>
       <p id="errorRedirect" class="error"></p>
       
       <button id="btnRedirectChrome" hidden="true" style="margin-top: 1rem; background-color: gray;">
@@ -76,7 +76,6 @@
       const elemInfo = document.querySelector('#information');
       const elemSuccess = document.querySelector('#authSuccess');
       const elemAuthInfo = document.querySelector('#authInfo');
-      const elemError = document.querySelector('#error');
       const elemErrorDetail = document.querySelector('#errorDetail');
       const elemErrorRedirect = document.querySelector('#errorRedirect');
       const elemErrorTitle = document.querySelector('#errorTitle');
@@ -97,7 +96,7 @@
         elemErrorTitle.innerHTML = title || "Operación cancelada";
         elemErrorDetail.innerHTML = message;
 
-        elemError.hidden = false;
+        // elemError.hidden = false;
         elemImgError.hidden = false;
 
         elemAuthentication.hidden = true;
@@ -128,7 +127,7 @@
 
         // Redirection button
         document.querySelector('#btnRedirectChrome').hidden = false;
-        if(error) document.querySelector('#btnReload').hidden = false;
+        if(message) document.querySelector('#btnReload').hidden = false;
         document.querySelector('#btnRedirectChrome').addEventListener('click', async () => {
           window.open(redirection_url, '_blank');
         });
@@ -192,11 +191,11 @@
             asseResp = await SimpleWebAuthnBrowser.startAuthentication(opts);
           } catch (error) {
             if (error.name == "InvalidStateError") {
-              showError("Llave de Seguridad desconocida", "No conocemos esa Llave de Seguridad. ¿Está registrada?");
+              showError("Humm... Llave de Seguridad desconocida", "No conocemos esa Llave de Seguridad. ¿Está registrada?");
             } else if (error.name == "NotAllowedError") {
-              showRedirect("No hemos encontrado la Llave de Seguridad", "Se ha cancelado la operación o puede que no se haya encontrado la Llave de Seguridad. ¡Prueba de nuevo!");
+              showRedirect("¡Vaya! No hemos encontrado tu Llave de Seguridad", "Se ha cancelado la operación o puede que no se haya encontrado la Llave de Seguridad que has registrad. ¡Prueba de nuevo o utiliza otra Llave!");
             } else {
-              showRedirect("Operación cancelada", "Vaya... parece que hemos hecho algo mal. ¡Prueba de nuevo!");
+              showRedirect("¡Oh! Operación cancelada", "Vaya... parece que algo no ha ido bien. ¡Inténtalo de nuevo!");
             }
             throw new Error(error);
           }
@@ -230,8 +229,7 @@
             elemSuccess.innerHTML = `¡Usuario autenticado!`;
             window.location = '/user/';
           } else {
-            showError('Vaya, parece que algo ha fallado. ¡Asegúrate de no mover la llave durante el proceso!');
-            showRedirect(true);
+            showRedirect("Vaya, parece que algo ha fallado", "¡Asegúrate de no mover la llave durante el proceso!");
           }
         });
       }
