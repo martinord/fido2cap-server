@@ -11,10 +11,10 @@
   --secondaryS: 51%;
   --secondaryL: 69%;
   /* Other Parameters */
-  --primary-bg: #efefef;
-  --secondary-bg: #1c2128;
-  --input-bg: #1c2128;
-  --font-color: #efefef;
+  --primary-bg: #1c2128;
+  --secondary-bg: #efefef;
+  --input-bg: #efefef;
+  --font-color: #1c2128;
   --font-family: 'Courier New', Courier, monospace;
   --font-size-root: calc(12px + 0.2vw);
   --font-weight-normal: 400;
@@ -35,6 +35,10 @@ body {
 
 input[type="text"], textarea {
   background-color: var(--input-bg); 
+}
+
+button {
+  color: white;
 }
 
 textarea {
@@ -62,7 +66,8 @@ table>caption {
 }
 
 .error {
-  color: rgb(173, 173, 173);
+  color: rgb(110, 110, 110);
+  font-size: 1rem;
 }
 
 .success {

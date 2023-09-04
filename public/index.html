@@ -25,7 +25,7 @@
           </div>
           <div id="discoverable" style="margin: 2rem;">
             <input id="nonDiscoverable" type="checkbox">
-            <label>👌&nbsp;No necesito un nombre de usuario</label>
+            <label style="font-size: 1rem;">👌&nbsp;No necesito un nombre de usuario</label>
           </div>
           <button id="btnUsername">
             👉🏼&nbsp; Continuar
@@ -60,11 +60,12 @@
       <p id="errorDetail" class="error"></p>
       <p id="errorRedirect" class="error"></p>
       
+      <button id="btnRedirectChrome" hidden="true" style="margin-top: 1rem; background-color: gray;">
+        ↗️&nbsp;Abrir en otro navegador
+      </button>
+
       <button id="btnReload" hidden="true" style="margin-top: 1rem;" onclick="window.location.reload();">
         🔃&nbsp;Probar de nuevo
-      </button>
-      <button id="btnRedirectChrome" hidden="true" style="margin-top: 1rem;">
-        ↗️&nbsp;Abrir en otro navegador
       </button>
 
     </div>
