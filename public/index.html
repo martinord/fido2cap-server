@@ -37,10 +37,10 @@
           <div>
             <img src="img/security-key.webp" alt="Una persona sujetando una llave" width="200">
           </div>
-          <button id="btnAuthBegin" style="margin-top: 1rem;">
-            🔐&nbsp; Empezar
+          <button id="btnAuthBegin" style="margin-top: 1rem;" hidden>
+            🔃&nbsp;Probar de nuevo
           </button>
-          <img id="authGif" class="loading" hidden="true" src="/loading.gif" alt="Atenticando..." width="200">
+          <img id="authGif" class="loading" src="/loading.gif" alt="Autenticando..." width="200">
           <p id="authInfo"></p>
           <div id="information" class="information">
             <p>Usa tu <strong>Llave de Seguridad</strong> para entrar en un click.</p>
@@ -144,18 +144,22 @@
         /**
          * Get username
          */
-        async function getUsername() {
+        function getUsername() {
           if(elemUsername.value != '' || elemNonDiscoverable.checked) {
             elemUserSection.hidden = true;
             elemAuthentication.hidden = false;
+            return true;
           } else {
             elemUsernameError.innerHTML = "Por favor, escribe tu nombre de usuario o marca la casilla."
+            return false;
           }
         }
 
-        document.querySelector('#btnUsername').addEventListener('click', getUsername);
+        document.querySelector('#btnUsername').addEventListener('click', authenticationCall);
+        document.querySelector('#btnAuthBegin').addEventListener('click', authenticationCall);
+
         document.querySelector('#username').addEventListener('keydown', (event) => {
-          if (event.keyCode === 13) getUsername(); // user presses enter
+          if (event.keyCode === 13) authenticationCall(); // user presses enter
         });
         document.querySelector('#username').value = localStorage.getItem('username');
 
@@ -169,7 +173,10 @@
          /**
          * Authentication
          */
-        document.querySelector('#btnAuthBegin').addEventListener('click', async () => {
+        async function authenticationCall () {
+
+          // Check if username is valid
+          if(!getUsername()) return;
 
           // Reset success/error messages
           elemSuccess.innerHTML = '';
@@ -201,7 +208,6 @@
 
           // Wait for verification response
           elemAuthInfo.innerHTML = 'Verificando tu identidad ...';
-          elemGif.hidden = false;
           elemButton.hidden = true;
           elemInfo.hidden = true;
           elemDiscoverable.hidden = true;
@@ -235,7 +241,7 @@
             showRedirect("No hemos podido verificar tu identidad", "Puede que algo falle o que esta llave ya no esté registrada. ¡Asegúrate de no mover la llave durante el proceso!");
           }
           
-        });
+        };
       }
 
     </script>
