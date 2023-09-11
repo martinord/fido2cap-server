@@ -37,6 +37,10 @@
           <div>
             <img src="img/security-key.webp" alt="Una persona sujetando una llave" width="200">
           </div>
+          <div>
+            <p><strong id="errorTitle"></strong></p>
+            <p id="errorDetail" class="error"></p>
+          </div>
           <button id="btnAuthBegin" style="margin-top: 1rem;" hidden>
             🔃&nbsp;Probar de nuevo
           </button>
@@ -50,9 +54,6 @@
       </div>
 
       <p id="authSuccess" class="success"></p>
-
-      <h2 id="errorTitle"></h2>
-      <p id="errorDetail" class="error"></p>
 
       <div id="imgError" hidden>
         <img src="img/error.png" alt="Persona confundida" width="200">
@@ -96,9 +97,9 @@
         elemErrorTitle.innerHTML = title || "Operación cancelada";
         elemErrorDetail.innerHTML = message;
 
-        elemImgError.hidden = false;
+        elemButton.hidden = false;
 
-        elemAuthentication.hidden = true;
+        elemGif.hidden = true;
         elemUserSection.hidden = true;
       }
 
@@ -106,7 +107,7 @@
        * Show redirection button when the browser is not compatible
        * 
        */
-      function showRedirect(title, message) {
+      function showRedirect() {
 
         // Redirect depending on the OS
         let os = new UAParser(window.navigator.userAgent).getOS().name;
@@ -122,6 +123,7 @@
 
         // Message
         document.querySelector('.controls').style.display = 'none';
+        document.querySelector('#imgError').hidden = false;
         elemErrorRedirect.innerHTML = "Puede que este navegador en " + os + " no soporte las Llaves de Seguridad. Copia la URL en otro navegador o prueba el siguiente botón. 👇";
 
         // Redirection button
@@ -130,15 +132,10 @@
         document.querySelector('#btnRedirectChrome').addEventListener('click', async () => {
           window.open(redirection_url, '_blank');
         });
-
-        // Show error message
-        if (message) {
-          showError(title, message);
-        }
       }
 
       // Hide the Begin button if the browser is incapable of using WebAuthn
-      if (!SimpleWebAuthnBrowser.browserSupportsWebAuthn()) showRedirect(false)
+      if (!SimpleWebAuthnBrowser.browserSupportsWebAuthn()) showRedirect()
       else {
 
         /**
@@ -183,6 +180,8 @@
           elemErrorTitle.innerHTML = '';
           elemErrorDetail.innerHTML = '';
           elemAuthInfo.innerHTML = '';
+          elemGif.hidden = false;
+          elemButton.hidden = true;
 
           const resp = await fetch('/api/authentication?' + new URLSearchParams({ 
             'username' : elemUsername.value.toLowerCase().trim(),
@@ -199,9 +198,9 @@
             if (error.name == "InvalidStateError") {
               showError("Humm... Llave de Seguridad desconocida", "No conocemos esa Llave de Seguridad. ¿Está registrada?");
             } else if (error.name == "NotAllowedError") {
-              showRedirect("¡Vaya! No hemos encontrado tu Llave de Seguridad", "Se ha cancelado la operación o puede que no se haya encontrado la Llave de Seguridad que has registrado. ¡Prueba de nuevo o utiliza otra llave!");
+              showError("¡Vaya! No hemos encontrado tu Llave de Seguridad", "Se ha cancelado la operación o puede que no se haya encontrado la Llave de Seguridad que has registrado. ¡Prueba de nuevo o utiliza otra llave!");
             } else {
-              showRedirect("¡Oh! Operación cancelada", "Vaya... parece que algo no ha ido bien. ¡Inténtalo de nuevo!");
+              showError("¡Oh! Operación cancelada", "Vaya... parece que algo no ha ido bien. ¡Inténtalo de nuevo!");
             }
             throw new Error(error);
           }
@@ -235,10 +234,10 @@
               elemSuccess.innerHTML = `¡Usuario autenticado!`;
               window.location = '/user/';
             } else {
-              showRedirect("No hemos podido verificar tu identidad", "Puede que algo falle o que esta llave ya no esté registrada. ¡Asegúrate de no mover la llave durante el proceso!");
+              showError("No hemos podido verificar tu identidad", "Puede que algo falle o que esta llave ya no esté registrada. ¡Asegúrate de no mover la llave durante el proceso!");
             }
           } catch (error) {
-            showRedirect("No hemos podido verificar tu identidad", "Puede que algo falle o que esta llave ya no esté registrada. ¡Asegúrate de no mover la llave durante el proceso!");
+            showError("No hemos podido verificar tu identidad", "Puede que algo falle o que esta llave ya no esté registrada. ¡Asegúrate de no mover la llave durante el proceso!");
           }
           
         };
