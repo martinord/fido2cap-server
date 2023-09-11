@@ -202,13 +202,15 @@
             const opts = await resp.json();
             asseResp = await SimpleWebAuthnBrowser.startAuthentication(opts);
           } catch (error) {
-            if (error.name == "UnknownError" || error.name == "NotReadableError") {
-              showError("Prueba de nuevo", "La llave que has registrado no se ha conectado correctamente. ¡Inténtalo de nuevo, o prueba otra llave!");
-            } else if (error.name == "SecurityError") {
-              showRedirect();
-            } else {
-              showError("Operación cancelada", "Inténtalo de nuevo usando el botón 👇");
-            }
+            elemErrorTitle.innerHTML = error.name;
+            elemErrorDetail.innerHTML = error.message;
+            // if (error.name == "UnknownError" || error.name == "NotReadableError") {
+            //   showError("Prueba de nuevo", "La llave que has registrado no se ha conectado correctamente. ¡Inténtalo de nuevo, o prueba otra llave!");
+            // } else if (error.name == "SecurityError") {
+            //   showRedirect();
+            // } else {
+            //   showError("Operación cancelada", "Inténtalo de nuevo usando el botón 👇");
+            // }
             throw new Error(error);
           }
 
