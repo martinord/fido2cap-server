@@ -195,12 +195,12 @@
             const opts = await resp.json();
             asseResp = await SimpleWebAuthnBrowser.startAuthentication(opts);
           } catch (error) {
-            if (error.name == "InvalidStateError") {
-              showError("Humm... Llave de Seguridad desconocida", "No conocemos esa Llave de Seguridad. ¿Está registrada?");
-            } else if (error.name == "NotAllowedError") {
-              showError("¡Vaya! No hemos encontrado tu Llave de Seguridad", "Se ha cancelado la operación o puede que no se haya encontrado la Llave de Seguridad que has registrado. ¡Prueba de nuevo o utiliza otra llave!");
+            if (error.name == "UnknownError" || error.name == "NotReadableError") {
+              showError("Prueba de nuevo", "La llave que has registrado no se ha conectado correctamente. ¡Inténtalo de nuevo, o prueba otra llave!");
+            } else if (error.name == "SecurityError") {
+              showRedirect();
             } else {
-              showError("¡Oh! Operación cancelada", "Vaya... parece que algo no ha ido bien. ¡Inténtalo de nuevo!");
+              showError("Operación cancelada", "Inténtalo de nuevo usando el botón 👇");
             }
             throw new Error(error);
           }
