@@ -128,7 +128,6 @@
 
         // Redirection button
         document.querySelector('#btnRedirectChrome').hidden = false;
-        if(message) document.querySelector('#btnReload').hidden = false;
         document.querySelector('#btnRedirectChrome').addEventListener('click', async () => {
           window.open(redirection_url, '_blank');
         });
