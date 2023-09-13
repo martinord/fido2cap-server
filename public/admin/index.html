@@ -19,21 +19,26 @@
 
       <div class="controls">
         <section id="registration">
-          <div>
-            <label>Nombre de usuario</label>
-            <input id="username" type="text">
-            <button id="btnRegBegin">
-              🚪&nbsp;Registrar
-            </button>
-            <div style="margin-top: 1rem;">
-              <input id="nonDiscoverable" type="checkbox">
-              <label>Requerir nombre de usuario</label>
-            </div>
+
+          <label>
+            <strong>Nombre de usuario</strong> <input id="username" type="text">
+          </label>
+
+          <button id="btnRegBegin" style="margin-top: 10px;">
+            🚪&nbsp;Registrar
+          </button>
+          
+          <div style="margin-top: 1rem;">
+            <label><input id="nonDiscoverable" type="checkbox"> Requerir nombre de usuario</label>
           </div>
+          
           <p id="regSuccess" class="success"></p>
           <p id="regError" class="error"></p>
+          
           <br>
+          
           <a href="/user">⬅️&nbsp;Mi usuario</a>
+          
           <table>
             <caption>Usuarios registrados</caption>
             <thead>
@@ -47,10 +52,12 @@
             <tbody id="registered-users-table">
             </tbody>
           </table>
+          
           <details closed>
             <summary>Consola de depuración</summary>
             <textarea id="regDebug" spellcheck="false" readonly></textarea>
           </details>
+        
         </section>
       </div>
 

@@ -13,43 +13,51 @@
     <div class="container">
       <div class="controls">
         <section id="userSection">
+          
           <h2>¡Hola! ¿Quien eres?</h2>
-          <div>
-            <img src="img/people.webp" alt="Una persona sujetando una llave" width="200">
-          </div>
-          <div>
-            <p>Introduce tu <strong>nombre de usuario</strong> y pulsa continuar</p>
-          </div>
+          
+          <img src="img/people.webp" alt="Una persona sujetando una llave" width="200">
+          
+          <p>Introduce tu <strong>nombre de usuario</strong> y pulsa continuar</p>
+          
           <div id="user">
             <input id="username" type="text">
           </div>
+          
           <div id="discoverable" style="margin: 2rem;">
-            <input id="nonDiscoverable" type="checkbox">
-            <label style="font-size: 1rem;">👌&nbsp;No necesito un nombre de usuario</label>
+            <label><input id="nonDiscoverable" type="checkbox"> 👌&nbsp;No necesito un nombre de usuario</label>
           </div>
+          
           <button id="btnUsername">
             👉🏼&nbsp; Continuar
           </button>
           <p id="usernameError" class="error"></p>
+        
         </section>
+        
         <section id="authentication" hidden>
+          
           <h2>Usa tu Llave de Seguridad</h2>
-          <div>
-            <img src="img/security-key.webp" alt="Una persona sujetando una llave" width="200">
-          </div>
+          
+          <img src="img/security-key.webp" alt="Una persona sujetando una llave" width="200">
+          
           <div>
             <p><strong id="errorTitle"></strong></p>
             <p id="errorDetail" class="error"></p>
           </div>
+          
           <button id="btnAuthBegin" style="margin-top: 1rem;" hidden>
             🔃&nbsp;Probar de nuevo
           </button>
+          
           <img id="authGif" class="loading" src="/loading.gif" alt="Autenticando..." width="200">
           <p id="authInfo"></p>
+          
           <div id="information" class="information">
             <p>Usa tu <strong>Llave de Seguridad</strong> para entrar en un click.</p>
-            <p><a href="/about">🔍&nbsp;Saber más</a> <a href="/">⬅️&nbsp;Volver atrás</a></p>
+            <p><a style="padding-right: 5px;" href="/about">🔍&nbsp;Saber más</a> <a href="/">⬅️&nbsp;Volver atrás</a></p>
           </div>
+        
         </section>
       </div>
 
