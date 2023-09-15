@@ -57,7 +57,7 @@ registration.get('/', async (req, res) => {
             rpID: globalThis.rpID,
             userID: userId,
             userName: username,
-            timeout: 60000,
+            timeout: nonDiscoverable? 120000 : 300000, // 2 or 5 minutes, standard
             attestationType: 'direct',
             excludeCredentials: user ? user.devices.map(dev => ({
                 id: dev.credentialID,
@@ -147,7 +147,7 @@ authentication.get('/', async (req, res) => {
     
     try {
         const opts: GenerateAuthenticationOptionsOpts = {
-            timeout: 60000,
+            timeout: nonDiscoverable? 120000 : 300000, // 2 or 5 minutes, standard
             allowCredentials: nonDiscoverable ? await userDatabase.getAllowCredentialsByUsername(username) : [],
             userVerification: nonDiscoverable ? 'discouraged' : 'required',
             rpID: globalThis.rpID,
