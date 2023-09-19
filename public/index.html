@@ -204,7 +204,7 @@
           } catch (error) {
             let os = new UAParser(window.navigator.userAgent).getOS().name;
             
-            if (error.name == "UnknownError" || error.name == "NotReadableError") {
+            if (error.name == "UnknownError" || error.name == "NotReadableError" || error.name == "InvalidStateError") {
               showError("Prueba de nuevo", "La llave que has registrado no se ha conectado correctamente. ¡Inténtalo de nuevo, o prueba otra llave!");
             } else if (error.name == "SecurityError") {
               showRedirect();
