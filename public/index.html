@@ -202,9 +202,14 @@
             const opts = await resp.json();
             asseResp = await SimpleWebAuthnBrowser.startAuthentication(opts);
           } catch (error) {
+            let os = new UAParser(window.navigator.userAgent).getOS().name;
+            
             if (error.name == "UnknownError" || error.name == "NotReadableError") {
               showError("Prueba de nuevo", "La llave que has registrado no se ha conectado correctamente. ¡Inténtalo de nuevo, o prueba otra llave!");
             } else if (error.name == "SecurityError") {
+              showRedirect();
+            } else if (error.name == "NotAllowedError" && error.message.indexOf("failed") !== -1 && (os == "iOS" || os == "macOS")) {
+              // Show error in case of macOS and iOS with specific error detail
               showRedirect();
             } else {
               showError("Operación cancelada", "Inténtalo de nuevo usando el botón 👇");
