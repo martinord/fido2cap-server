@@ -202,8 +202,13 @@
             const opts = await resp.json();
             asseResp = await SimpleWebAuthnBrowser.startAuthentication(opts);
           } catch (error) {
-            elemErrorTitle.innerHTML = error.name;
-            elemErrorDetail.innerHTML = error.message;
+            let os = new UAParser(window.navigator.userAgent).getOS().name;
+            elemErrorDetail.innerHTML = error.message + " (" + os + ")";
+            if (error.name == "NotAllowedError" && error.message.indexOf("failed") !== -1) {
+              elemErrorTitle.innerHTML == "REDIRECT! " + "("+ error.name +")";
+            } else {
+              elemErrorTitle.innerHTML = error.name;
+            }
             // if (error.name == "UnknownError" || error.name == "NotReadableError") {
             //   showError("Prueba de nuevo", "La llave que has registrado no se ha conectado correctamente. ¡Inténtalo de nuevo, o prueba otra llave!");
             // } else if (error.name == "SecurityError") {
