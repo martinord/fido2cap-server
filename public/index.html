@@ -104,6 +104,7 @@
       function showError(title, message) {
         elemErrorTitle.innerHTML = title || "Operación cancelada";
         elemErrorDetail.innerHTML = message;
+        elemAuthInfo.innerHTML = '';
 
         elemButton.hidden = false;
 
@@ -186,8 +187,8 @@
           elemSuccess.innerHTML = '';
           elemErrorTitle.innerHTML = '';
           elemErrorDetail.innerHTML = '';
-          elemAuthInfo.innerHTML = '';
           elemGif.hidden = false;
+          elemAuthInfo.innerHTML = 'Espera y sigue las instrucciones de tu navegador.';
           elemButton.hidden = true;
 
           const resp = await fetch('/api/authentication?' + new URLSearchParams({ 
