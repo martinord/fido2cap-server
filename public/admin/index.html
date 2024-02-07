@@ -6,30 +6,30 @@
     <script src="/index.es5.umd.min.js"></script>
     <link rel="stylesheet" href="/almond.lite.min.css" />
     <link rel="stylesheet" href="/styles.css" />
-    <title>Interfaz de administración</title>
+    <title>Admin Interface</title>
   </head>
   <body>
     <div class="container">
-      <h1>Interfaz de administración</h1>
+      <h1>Admin Interface</h1>
 
       <div hidden id="forbidden">
-        <h2>Acceso denegado</h2>
-        <a href="/">⬅️&nbsp;Volver atrás</a>
+        <h2>Access Denied</h2>
+        <a href="/">⬅️&nbsp;Go back</a>
       </div>
 
       <div class="controls">
         <section id="registration">
 
           <label>
-            <strong>Nombre de usuario</strong> <input id="username" type="text">
+            <strong>Username</strong> <input id="username" type="text">
           </label>
 
           <button id="btnRegBegin" style="margin-top: 10px;">
-            🚪&nbsp;Registrar
+            🚪&nbsp;Register
           </button>
           
           <div style="margin-top: 1rem;">
-            <label><input id="nonDiscoverable" type="checkbox"> Requerir nombre de usuario</label>
+            <label><input id="nonDiscoverable" type="checkbox"> Require username</label>
           </div>
           
           <p id="regSuccess" class="success"></p>
@@ -37,15 +37,15 @@
           
           <br>
           
-          <a href="/user">⬅️&nbsp;Mi usuario</a>
+          <a href="/user">⬅️&nbsp;My user</a>
           
           <table>
-            <caption>Usuarios registrados</caption>
+            <caption>Registered Users</caption>
             <thead>
               <tr>
-                <th>Nombre</th>
-                <th>Llaves registradas</th>
-                <th>Sesiones activas</th>
+                <th>Name</th>
+                <th>Registered Keys</th>
+                <th>Active Sessions</th>
                 <th>Admin</th>
               </tr>
             </thead>
@@ -54,7 +54,7 @@
           </table>
           
           <details closed>
-            <summary>Consola de depuración</summary>
+            <summary>Debug Console</summary>
             <textarea id="regDebug" spellcheck="false" readonly></textarea>
           </details>
         
@@ -80,7 +80,7 @@
       // Hide the Begin button if the browser is incapable of using WebAuthn
       if (!browserSupportsWebAuthn()) {
         document.querySelector('.controls').style.display = 'none';
-        document.querySelector('.systemError').innerText = "¡Vaya! Parece que este navegador no es compatible.";
+        document.querySelector('.systemError').innerText = "Oops! It seems that this browser is not compatible.";
       } else {
 
         /**
@@ -112,7 +112,7 @@
             printDebug(elemDebug, 'Registration Response', JSON.stringify(attResp, null, 2));
           } catch (error) {
             if (error.name === 'InvalidStateError') {
-              elemError.innerText = 'Error: Puede que la llave esté ya registrada para el usuario';
+              elemError.innerText = 'Error: The key might already be registered for the user';
             } else {
               elemError.innerText = error;
             }
@@ -132,11 +132,11 @@
           printDebug(elemDebug, 'Server Response', JSON.stringify(verificationJSON, null, 2));
 
           if (verificationJSON && verificationJSON.verified) {
-            elemSuccess.innerHTML = '¡Llave registrada para el usuario ' + elemUsername.value + '!';
+            elemSuccess.innerHTML = 'Key registered for user ' + elemUsername.value + '!';
             elemUsername.disabled = false;
             elemUsername.value = '';
           } else {
-            elemError.innerHTML = `¡Vaya!, parece que algo ha ido mal. Respuesta: <pre>${JSON.stringify(
+            elemError.innerHTML = `Oops!, something seems to have gone wrong. Response: <pre>${JSON.stringify(
               verificationJSON,
             )}</pre>`;
           }

@@ -7,29 +7,29 @@
     <script src="/ua-parser.pack.js"></script>
     <link rel="stylesheet" href="/almond.lite.min.css" />
     <link rel="stylesheet" href="/styles.css" />
-    <title>Autenticación con llave de seguridad</title>
+    <title>Security Key Authentication</title>
   </head>
   <body>
     <div class="container">
       <div class="controls">
         <section id="userSection">
           
-          <h2>¡Hola! ¿Quien eres?</h2>
+          <h2>Hi! Who are you?</h2>
           
-          <img src="img/people.webp" alt="Una persona sujetando una llave" width="200">
+          <img src="img/people.webp" alt="A person holding a key" width="200">
           
-          <p>Introduce tu <strong>nombre de usuario</strong> y pulsa continuar</p>
+          <p>Enter your <strong>username</strong> and press continue</p>
           
           <div id="user">
             <input id="username" type="text">
           </div>
           
           <div id="discoverable" style="margin: 2rem;">
-            <label><input id="nonDiscoverable" type="checkbox"> 👌&nbsp;No necesito un nombre de usuario</label>
+            <label><input id="nonDiscoverable" type="checkbox"> 👌&nbsp;I don't need a username</label>
           </div>
           
           <button id="btnUsername">
-            👉🏼&nbsp; Continuar
+            👉🏼&nbsp; Continue
           </button>
           <p id="usernameError" class="error"></p>
         
@@ -37,9 +37,9 @@
         
         <section id="authentication" hidden>
           
-          <h2>Usa tu Llave de Seguridad</h2>
+          <h2>Use your Security Key</h2>
           
-          <img src="img/security-key.webp" alt="Una persona sujetando una llave" width="200">
+          <img src="img/security-key.webp" alt="A person holding a key" width="200">
           
           <div>
             <p><strong id="errorTitle"></strong></p>
@@ -47,15 +47,15 @@
           </div>
           
           <button id="btnAuthBegin" style="margin-top: 1rem;" hidden>
-            🔃&nbsp;Probar de nuevo
+            🔃&nbsp;Try again
           </button>
           
-          <img id="authGif" class="loading" src="/loading.gif" alt="Autenticando..." width="200">
+          <img id="authGif" class="loading" src="/loading.gif" alt="Authenticating..." width="200">
           <p id="authInfo"></p>
           
           <div id="information" class="information">
-            <p>Usa tu <strong>Llave de Seguridad</strong> para entrar en un click.</p>
-            <p><a style="padding-right: 5px;" href="/about">🔍&nbsp;Saber más</a> <a href="/">⬅️&nbsp;Volver atrás</a></p>
+            <p>Use your <strong>Security Key</strong> to log in with one click.</p>
+            <p><a style="padding-right: 5px;" href="/about">🔍&nbsp;Learn more</a> <a href="/">⬅️&nbsp;Go back</a></p>
           </div>
         
         </section>
@@ -64,17 +64,17 @@
       <p id="authSuccess" class="success"></p>
 
       <div id="imgError" hidden>
-        <img src="img/error.png" alt="Persona confundida" width="200">
+        <img src="img/error.png" alt="Confused person" width="200">
       </div>
 
       <p id="errorRedirect" class="error"></p>
       
       <button id="btnRedirectChrome" hidden="true" style="margin-top: 1rem; background-color: gray;">
-        ↗️&nbsp;Abrir en otro navegador
+        ↗️&nbsp;Open in another browser
       </button>
 
       <button id="btnReload" hidden="true" style="margin-top: 1rem;" onclick="window.location.reload();">
-        🔃&nbsp;Probar de nuevo
+        🔃&nbsp;Try again
       </button>
 
     </div>
@@ -102,7 +102,7 @@
        * Shows an error on the screen
        */
       function showError(title, message) {
-        elemErrorTitle.innerHTML = title || "Operación cancelada";
+        elemErrorTitle.innerHTML = title || "Operation cancelled";
         elemErrorDetail.innerHTML = message;
         elemAuthInfo.innerHTML = '';
 
@@ -133,7 +133,7 @@
         // Message
         document.querySelector('.controls').style.display = 'none';
         document.querySelector('#imgError').hidden = false;
-        elemErrorRedirect.innerHTML = "Puede que este navegador en " + os + " no soporte las Llaves de Seguridad. Copia la URL en otro navegador o prueba el siguiente botón. 👇";
+        elemErrorRedirect.innerHTML = "This browser on " + os + " may not support Security Keys. Copy the URL into another browser or try the button below. 👇";
 
         // Redirection button
         document.querySelector('#btnRedirectChrome').hidden = false;
@@ -155,7 +155,7 @@
             elemAuthentication.hidden = false;
             return true;
           } else {
-            elemUsernameError.innerHTML = "Por favor, escribe tu nombre de usuario o marca la casilla."
+            elemUsernameError.innerHTML = "Please, enter your username or check the box."
             return false;
           }
         }
@@ -188,7 +188,7 @@
           elemErrorTitle.innerHTML = '';
           elemErrorDetail.innerHTML = '';
           elemGif.hidden = false;
-          elemAuthInfo.innerHTML = 'Espera y sigue las instrucciones de tu navegador.';
+          elemAuthInfo.innerHTML = 'Wait and follow the instructions of your browser.';
           elemButton.hidden = true;
 
           const resp = await fetch('/api/authentication?' + new URLSearchParams({ 
@@ -206,20 +206,20 @@
             let os = new UAParser(window.navigator.userAgent).getOS().name;
             
             if (error.name == "UnknownError" || error.name == "NotReadableError" || error.name == "InvalidStateError") {
-              showError("Prueba de nuevo", "La llave que has registrado no se ha conectado correctamente. ¡Inténtalo de nuevo, o prueba otra llave!");
+              showError("Try again", "The key you have registered has not connected correctly. Try again, or try another key!");
             } else if (error.name == "SecurityError") {
               showRedirect();
             } else if (error.name == "NotAllowedError" && error.message.indexOf("failed") !== -1 && (os == "iOS" || os == "macOS")) {
               // Show error in case of macOS and iOS with specific error detail
               showRedirect();
             } else {
-              showError("Operación cancelada", "Inténtalo de nuevo usando el botón 👇");
+              showError("Operation cancelled", "Try again using the button 👇");
             }
             throw new Error(error);
           }
 
           // Wait for verification response
-          elemAuthInfo.innerHTML = 'Verificando tu identidad ...';
+          elemAuthInfo.innerHTML = 'Verifying your identity ...';
           elemButton.hidden = true;
           elemInfo.hidden = true;
           elemDiscoverable.hidden = true;
@@ -244,13 +244,13 @@
             const verificationJSON = await verificationResp.json();
 
             if (verificationJSON && verificationJSON.verified) {
-              elemSuccess.innerHTML = `¡Usuario autenticado!`;
+              elemSuccess.innerHTML = `User authenticated!`;
               window.location = '/user/';
             } else {
-              showError("No hemos podido verificar tu identidad", "Puede que algo falle o que esta llave ya no esté registrada. ¡Asegúrate de no mover la llave durante el proceso!");
+              showError("We couldn't verify your identity", "Something might be failing or this key is no longer registered. Make sure not to move the key during the process!");
             }
           } catch (error) {
-            showError("No hemos podido verificar tu identidad", "Puede que algo falle o que esta llave ya no esté registrada. ¡Asegúrate de no mover la llave durante el proceso!");
+            showError("We couldn't verify your identity", "Something might be failing or this key is no longer registered. Make sure not to move the key during the process!");
           }
           
         };

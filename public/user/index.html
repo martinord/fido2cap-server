@@ -5,30 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="/almond.lite.min.css" />
     <link rel="stylesheet" href="/styles.css" />
-    <title>Panel de usuario</title>
+    <title>User Panel</title>
   </head>
   <body>
     <div class="container">
       
       <div id="correct" hidden="true">
-        <h2>¡Genial! Ya tienes conexión a Internet</h2>
+        <h2>Great! You are now connected to the Internet</h2>
         <div>
-          <img src="/img/correct.webp" alt="¡Todo correcto!" width="200">
+          <img src="/img/correct.webp" alt="Everything is correct!" width="200">
         </div>
       </div>
       
-      <p id="username">¡Vaya! Debes autenticarte</p>
+      <p id="username">Oops! You need to authenticate</p>
       
       <button hidden id="btnLogout" onclick="window.location='/logout'">
-        Cerrar sesión
+        Log out
       </button>
       
       <button hidden id="btnAdmin" onclick="window.location='/admin'">
-        Panel de administrador
+        Admin Panel
       </button>
       
       <div style="margin: 10px;">
-        <a href="/">⬅️&nbsp;Volver al inicio</a>
+        <a href="/">⬅️&nbsp;Go back to the start</a>
       </div>
 
       <p class="systemError"></p>
@@ -37,7 +37,7 @@
       fetch('/api/user-details').then( async function(login) {
         let user = await login.json();
         if (user) {
-          document.querySelector('#username').innerHTML = `Tu usuario es ${ user.username }, y te has conectado correctamente.`;
+          document.querySelector('#username').innerHTML = `Your username is ${ user.username }, and you have successfully connected.`;
           document.querySelector('#btnLogout').hidden = false;
           document.querySelector('#correct').hidden = false;
           if(user.isAdmin)
