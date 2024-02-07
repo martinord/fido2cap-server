@@ -1,6 +1,6 @@
-# WebAuthn Authentication Server
+# WebAuthn Authentication Web Application (WAWA) for FIDO2CAP
 
-This is a WebAuthn Authentication Server with a simple login and administration interface.
+This is a WebAuthn Authentication Web Application with a simple login and administration interface, compatible with OpenNDS captive portal. This server implements the FIDO2 Captive-portal Authentication Protocol (FIDO2CAP).
 
 ## Usage
 
