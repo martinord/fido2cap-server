@@ -14,11 +14,11 @@
       <div class="controls">
         <section id="userSection">
           
-          <h2>Hi! Who are you?</h2>
+          <h2>Hi! Ready to login?</h2>
           
           <img src="img/people.webp" alt="A person holding a key" width="200">
           
-          <p>Enter your <strong>username</strong> and press continue</p>
+          <!-- <p>Enter your <strong>username</strong> and press continue</p>
           
           <div id="user">
             <input id="username" type="text">
@@ -26,10 +26,12 @@
           
           <div id="discoverable" style="margin: 2rem;">
             <label><input id="nonDiscoverable" type="checkbox"> 👌&nbsp;I don't need a username</label>
-          </div>
+          </div> -->
           
+          <br>
+
           <button id="btnUsername">
-            👉🏼&nbsp; Continue
+            👉🏼&nbsp; Login
           </button>
           <p id="usernameError" class="error"></p>
         
@@ -179,6 +181,9 @@
          * Authentication
          */
         async function authenticationCall () {
+
+          window.location.href = '/auth/zitadel';
+          return;
 
           // Check if username is valid
           if(!getUsername()) return;

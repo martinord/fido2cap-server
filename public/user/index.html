@@ -27,7 +27,7 @@
         Admin Panel
       </button>
       
-      <div style="margin: 10px;">
+      <div id="btnBack" style="margin: 10px;">
         <a href="/">⬅️&nbsp;Go back to the start</a>
       </div>
 
@@ -40,6 +40,7 @@
           document.querySelector('#username').innerHTML = `Your username is ${ user.username }, and you have successfully connected.`;
           document.querySelector('#btnLogout').hidden = false;
           document.querySelector('#correct').hidden = false;
+          document.querySelector('#btnBack').hidden = true;
           if(user.isAdmin)
             document.querySelector('#btnAdmin').hidden = false;
         }

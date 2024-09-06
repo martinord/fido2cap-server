@@ -1,8 +1,8 @@
 import https from 'https';
 import http from 'http';
-import fs from 'fs';
+import fs, { access } from 'fs';
 
-import express from 'express';
+import express, { NextFunction } from 'express';
 import dotenv from 'dotenv';
 
 import mongoose from 'mongoose';
@@ -11,9 +11,12 @@ import session from 'express-session';
 dotenv.config();
 
 import * as fas from './controllers/fas';
-import * as webauthn from './controllers/webauthn';
+// import * as webauthn from './controllers/webauthn';
 import { authorizeOnlyAdmin, logoutRoute, registeredUsers, userDetails, makeAdmin } from './controllers/session';
 import { userDatabase } from './models/user';
+import { oauth2 } from './controllers/oauth';
+import passport from 'passport';
+import OAuth2Strategy from 'passport-oauth2';
 
 declare global {
   /**
@@ -36,7 +39,8 @@ declare global {
 
 const app = express();
 
-const { ENABLE_HTTPS, SESSION_KEY, SESSION_EXPIRE_TIME, CAPTIVE_PORTAL, DISABLE_PORTAL_REDIRECTION, RP_ID, ORIGIN, HOST, MONGO_HOST } = process.env;
+const { ENABLE_HTTPS, SESSION_KEY, SESSION_EXPIRE_TIME, CAPTIVE_PORTAL, DISABLE_PORTAL_REDIRECTION,
+   RP_ID, ORIGIN, HOST, MONGO_HOST, OAUTH_URL, OAUTH_TOKEN_URL, OAUTH_CLIENT_ID, OAUTH_SECRET } = process.env;
 
 globalThis.rpID = RP_ID || 'localhost';
 globalThis.mongoHost = MONGO_HOST || 'localhost';
@@ -70,7 +74,48 @@ if (CAPTIVE_PORTAL) {
   if(!DISABLE_PORTAL_REDIRECTION) app.use(fas.redirection);
 }
 
-app.use(express.static('./public/'));
+// OAuth2
+passport.use(new OAuth2Strategy({
+  authorizationURL: OAUTH_URL || "",
+  tokenURL: OAUTH_TOKEN_URL || "",
+  clientID: OAUTH_CLIENT_ID || "",
+  clientSecret: OAUTH_SECRET || "",
+  callbackURL: "https://localhost:4443/auth/zitadel/callback",
+  scope: 'openid',
+  state: true,
+  pkce: true
+}, 
+function(accessToken:string, refreshToken:string, profile:passport.Profile, next:NextFunction) {
+  // TODO: Retrieve username from the OAuth2 profile
+  // console.log(accessToken, refreshToken, profile);
+  // console.log("Authorised user", profile.displayName, "via OAuth2 with", profile.provider);
+  return next();
+}));
+
+passport.serializeUser(function(user:Express.User, done) {
+  done(null, "user"); // TODO: Retrieve user ID in session
+});
+
+passport.deserializeUser(function(user:Express.User, done) {
+  done(null, "user"); // TODO: Retrieve user ID in session
+});
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use('/auth', oauth2);
+
+function ensureAuthenticated(req: express.Request, res: express.Response, next: express.NextFunction) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect('/');
+}
+
+app.use('/user/', ensureAuthenticated);
+app.use('/admin/', ensureAuthenticated);
+
+app.use('/', express.static('./public/'));
 app.use(express.json());
 
 /**
@@ -84,13 +129,13 @@ mongoose.connect(`mongodb://${mongoHost}:27017/mydb`, {
   family: 4
 }).then((db) => console.log("✅ Database is connected")).catch((err) => console.log(err));
 
-app.use('/api/registration', authorizeOnlyAdmin, webauthn.registration);
-app.use('/api/authentication', webauthn.authentication);
+// app.use('/api/registration', authorizeOnlyAdmin, webauthn.registration);
+// app.use('/api/authentication', webauthn.authentication);
 
-app.use('/api/user-details', userDetails);
-app.use('/api/registered-users', authorizeOnlyAdmin, registeredUsers);
-app.post('/api/make-admin', authorizeOnlyAdmin, makeAdmin)
-app.use('/logout', logoutRoute);
+app.use('/api/user-details', ensureAuthenticated, userDetails);
+app.use('/api/registered-users', ensureAuthenticated, authorizeOnlyAdmin, registeredUsers);
+app.post('/api/make-admin', ensureAuthenticated, authorizeOnlyAdmin, makeAdmin)
+app.use('/logout', ensureAuthenticated, logoutRoute);
 
 userDatabase.isAdministratorConfigured().then((admin) => {
   globalThis.administratorConfigured = admin;

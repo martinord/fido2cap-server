@@ -22,7 +22,13 @@ export async function logoutRoute(req: Request, res: Response, next: NextFunctio
 
     req.session.loggedUserId = "";
     req.session.sessionId = undefined;
-    res.redirect(301, '/');
+    req.session.regenerate((err) => {
+        if (err)
+            res.status(500).send("Internal server error");
+        else
+            res.redirect(301, '/');
+    });
+    // res.redirect(301, '/');
 }
 
 /**
@@ -30,8 +36,9 @@ export async function logoutRoute(req: Request, res: Response, next: NextFunctio
  */
 export async function userDetails(req: Request, res: Response, next: NextFunction) {
     const loggedUserId = req.session.loggedUserId; 
+    const isAuthenticated = req.isAuthenticated();
 
-    if( loggedUserId && ( loggedUserId !== "" ) ) {
+    if( isAuthenticated && loggedUserId && ( loggedUserId !== "" ) ) {
         const user : User = await userDatabase.getById(loggedUserId);
         try {
 
@@ -41,7 +48,12 @@ export async function userDetails(req: Request, res: Response, next: NextFunctio
             res.status(500).send("Internal server error");
         }
     } else {
-        res.send("You are not logged in!");
+        // May be authenticated using OAuth2
+        if (isAuthenticated) {
+            // TODO: Return the username from OAuth2
+            res.send({ username: "OAuth2 User", isAdmin: false });
+        } else
+            res.send("You are not logged in!");
     }
 }
 
