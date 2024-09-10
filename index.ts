@@ -13,10 +13,10 @@ dotenv.config();
 import * as fas from './controllers/fas';
 // import * as webauthn from './controllers/webauthn';
 import { authorizeOnlyAdmin, logoutRoute, registeredUsers, userDetails, makeAdmin } from './controllers/session';
-import { userDatabase } from './models/user';
+import { User, userDatabase } from './models/user';
 import { oauth2 } from './controllers/oauth';
 import passport from 'passport';
-import OAuth2Strategy from 'passport-oauth2';
+import OpenIDConnectStrategy from 'passport-openidconnect';
 
 declare global {
   /**
@@ -40,7 +40,7 @@ declare global {
 const app = express();
 
 const { ENABLE_HTTPS, SESSION_KEY, SESSION_EXPIRE_TIME, CAPTIVE_PORTAL, DISABLE_PORTAL_REDIRECTION,
-   RP_ID, ORIGIN, HOST, MONGO_HOST, OAUTH_URL, OAUTH_TOKEN_URL, OAUTH_CLIENT_ID, OAUTH_SECRET } = process.env;
+   RP_ID, ORIGIN, HOST, MONGO_HOST, OAUTH_ISSUER, OAUTH_URL, OAUTH_TOKEN_URL, OAUTH_USERINFO_URL, OAUTH_CLIENT_ID, OAUTH_SECRET } = process.env;
 
 globalThis.rpID = RP_ID || 'localhost';
 globalThis.mongoHost = MONGO_HOST || 'localhost';
@@ -75,29 +75,30 @@ if (CAPTIVE_PORTAL) {
 }
 
 // OAuth2
-passport.use(new OAuth2Strategy({
+const oauth2Strategy = new OpenIDConnectStrategy({
+  issuer: OAUTH_ISSUER || "",
   authorizationURL: OAUTH_URL || "",
   tokenURL: OAUTH_TOKEN_URL || "",
+  userInfoURL: OAUTH_USERINFO_URL || "",
   clientID: OAUTH_CLIENT_ID || "",
   clientSecret: OAUTH_SECRET || "",
   callbackURL: "https://localhost:4443/auth/zitadel/callback",
-  scope: 'openid',
-  state: true,
-  pkce: true
+  scope: 'openid profile email',
+  // pkce: true // TODO: Enable PKCE
 }, 
-function(accessToken:string, refreshToken:string, profile:passport.Profile, next:NextFunction) {
-  // TODO: Retrieve username from the OAuth2 profile
-  // console.log(accessToken, refreshToken, profile);
-  // console.log("Authorised user", profile.displayName, "via OAuth2 with", profile.provider);
-  return next();
-}));
-
-passport.serializeUser(function(user:Express.User, done) {
-  done(null, "user"); // TODO: Retrieve user ID in session
+function(issuer:string, profile:OpenIDConnectStrategy.Profile, done:OpenIDConnectStrategy.VerifyCallback) {
+  // console.log("Authorised user", profile.emails, "via OAuth2 with", issuer);
+  return done(null, { username: profile.username, displayName: profile.displayName });
 });
 
-passport.deserializeUser(function(user:Express.User, done) {
-  done(null, "user"); // TODO: Retrieve user ID in session
+passport.use(oauth2Strategy);
+
+passport.serializeUser(function(user:any, done) {
+  done(null, user);
+});
+
+passport.deserializeUser(function(user:User, done) {
+  done(null, user.username);
 });
 
 app.use(passport.initialize());

@@ -1,6 +1,8 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { sleep } from '../helpers/session';
+import OAuth2Strategy from 'passport-oauth2';
+import passport from 'passport';
 
 dotenv.config();
 
@@ -17,6 +19,7 @@ declare module "express-session" {
     rhid: string,
     gatewayHash: string,
     originUrl: string
+    passport: any
   }
 }
 

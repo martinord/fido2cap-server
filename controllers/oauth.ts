@@ -5,11 +5,20 @@ import { sessionDatabase } from '../models/session';
 
 export const oauth2 : Router = Router();
 
-oauth2.get('/zitadel', passport.authenticate('oauth2', { scope: ['openid', 'profile', 'email'] }));
+oauth2.get('/zitadel', passport.authenticate('openidconnect', { scope: ['openid', 'profile', 'email'] }));
 oauth2.get('/zitadel/callback', async (req, res, next) => {
-  passport.authenticate('oauth2', async (err:Error, user:User, info:Error) => {
+  passport.authenticate('openidconnect', { failureRedirect: '/login' }, async (err:Error, user:User, info:Error) => {
     
-    if (err) next(err);
+    // info exists and is not empty
+    if (info && Object.keys(info).length > 0) {
+      console.error("Info OAuth2: ", info);
+      return res.redirect('/');
+    } 
+    
+    if (err) {
+      console.error("Error OAuth2:", err);
+      return res.redirect('/');
+    }
 
     req.logIn(user, async (err) => {
       
@@ -20,8 +29,7 @@ oauth2.get('/zitadel/callback', async (req, res, next) => {
       
       } 
       // Correct OAuth2 login
-      // TODO: Change to use the user ID from the OAuth2 profile
-      req.session.sessionId = await sessionDatabase.loginSession("OAuth2 User", req.session.rhid, req.session.gatewayHash);
+      req.session.sessionId = await sessionDatabase.loginSession(user.username, req.session.rhid, req.session.gatewayHash);
       return res.redirect('/user');
     
     });

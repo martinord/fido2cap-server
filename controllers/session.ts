@@ -22,12 +22,13 @@ export async function logoutRoute(req: Request, res: Response, next: NextFunctio
 
     req.session.loggedUserId = "";
     req.session.sessionId = undefined;
-    req.session.regenerate((err) => {
-        if (err)
-            res.status(500).send("Internal server error");
-        else
-            res.redirect(301, '/');
-    });
+    req.logout(next);
+    // req.session.regenerate((err) => {
+    //     if (err)
+    //         res.status(500).send("Internal server error");
+    //     else
+    //         res.redirect(301, '/');
+    // });
     // res.redirect(301, '/');
 }
 
@@ -49,9 +50,8 @@ export async function userDetails(req: Request, res: Response, next: NextFunctio
         }
     } else {
         // May be authenticated using OAuth2
-        if (isAuthenticated) {
-            // TODO: Return the username from OAuth2
-            res.send({ username: "OAuth2 User", isAdmin: false });
+        if (isAuthenticated && req.session.passport.user) {
+            res.send({ username: req.session.passport.user.username, isAdmin: false });
         } else
             res.send("You are not logged in!");
     }
