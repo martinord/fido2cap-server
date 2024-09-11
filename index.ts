@@ -82,7 +82,7 @@ const oauth2Strategy = new OpenIDConnectStrategy({
   userInfoURL: OAUTH_USERINFO_URL || "",
   clientID: OAUTH_CLIENT_ID || "",
   clientSecret: OAUTH_SECRET || "",
-  callbackURL: "https://localhost:4443/auth/zitadel/callback",
+  callbackURL: ORIGIN + "/auth/zitadel/callback",
   scope: 'openid profile email',
   // pkce: true // TODO: Enable PKCE
 }, 
