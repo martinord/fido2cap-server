@@ -29,12 +29,14 @@ export class Session {
   rhid: string | undefined;
   fasAuthentication: boolean;
   gatewayHash: string | undefined;
+  originUrl: string | undefined;
   
   constructor(userId: string, gatewayHash: string | undefined) {
     this.userId = userId;
     this.rhid = "";
     this.fasAuthentication = false;
     this.gatewayHash = gatewayHash;
+    this.originUrl = "";
   }
   
 }
@@ -65,7 +67,7 @@ class SessionDatabase {
    * Get unauthenticated gateway sessions by GatewayHash
    */
   public async getUnauthenticatedGatewaySessions( gatewayHash : string ) : Promise<Session[]> {
-    return (await this.sessionModel.find({ gatewayHash: gatewayHash, fasAuthentication: false }) as unknown) as Session[];
+    return (await this.sessionModel.find({ gatewayHash: gatewayHash, fasAuthentication: false, userId: {$exists: true, $ne: ''} }) as unknown) as Session[];
   }
 
   /**
@@ -84,14 +86,14 @@ class SessionDatabase {
     }
   }
 
-  public async loginSession( loggedUserId: string | undefined, rhid: string | undefined, gatewayHash: string | undefined ) : Promise<string> {
-    if (loggedUserId && (loggedUserId != "")) {
+  public async addLoginSession( rhid: string | undefined, gatewayHash: string | undefined, originUrl: string | undefined ) : Promise<string> {
+    if (rhid && (rhid != "")) {
         await this.sessionModel.createCollection();
         const session_db = new this.sessionModel({ 
-          userId: loggedUserId,
           rhid: rhid,
           fasAuthentication: false,
-          gatewayHash: gatewayHash
+          gatewayHash: gatewayHash,
+          originUrl: originUrl
         });
         const document = await session_db.save();
 
@@ -101,6 +103,10 @@ class SessionDatabase {
         return document.id;
     }
     return "";
+  }
+
+  public async authoriseLoginSession ( loggedUserId: string, rhid: string ) {
+    await this.sessionModel.updateOne({ rhid: rhid }, { $set: { userId: loggedUserId } });
   }
 }
 

@@ -11,7 +11,7 @@ const { CAPTIVE_PORTAL, FAS_SHARED_KEY, FAS_DEBUG } = process.env;
  * Middleware that decodes, decrypts and parses the request 
  * to log FAS parameters in the session
  */
-export function clientController (req : Request, res : Response, next : Function) {
+export async function clientController (req : Request, res : Response, next : Function) {
     if(CAPTIVE_PORTAL && req.query.fas && req.query.iv) {
         // Decode fas from base64 and get iv query parameter
         let fas : string = req.query.fas as string;
@@ -41,9 +41,8 @@ export function clientController (req : Request, res : Response, next : Function
         }
 
         // Store details in session
+        req.session.sessionId = await sessionDatabase.addLoginSession(rhid, gatewayHash, originUrl);
         req.session.rhid = rhid;
-        req.session.gatewayHash = gatewayHash;
-        req.session.originUrl = originUrl;
     }
 
     next();

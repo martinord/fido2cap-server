@@ -5,14 +5,28 @@ import { sessionDatabase } from '../models/session';
 
 export const oauth2 : Router = Router();
 
-oauth2.get('/zitadel', passport.authenticate('openidconnect', { scope: ['openid', 'profile', 'email'] }));
+oauth2.get('/zitadel', (req, res, next) => {
+  console.log("[OIDC] Redirecting to Zitadel with RHID:", req.session.rhid);
+  passport.authenticate('openidconnect', { 
+    scope: ['openid', 'profile', 'email'], 
+    state: req.session.rhid,
+  }) (req, res, next);
+});
+
 oauth2.get('/zitadel/callback', async (req, res, next) => {
-  passport.authenticate('openidconnect', { failureRedirect: '/login' }, async (err:Error, user:User, info:Error) => {
+  passport.authenticate('openidconnect', { failureRedirect: '/login' }, async (err:Error, user:User, info:any) => {
+
+    // Recover state from query (RHID)
+    // Captive Portal request identifier (RHID)
+    console.log("[OIDC] Recovered RHID:", req.query.state);
+    if (info.state || req.query.state)
+      req.session.rhid = (req.query.state || info.state) as string;
+    else
+      return res.redirect('/');
     
     // info exists and is not empty
     if (info && Object.keys(info).length > 0) {
-      console.error("Info OAuth2: ", info);
-      return res.redirect('/');
+      console.log("[OIDC] Info: ", info);
     } 
     
     if (err) {
@@ -29,7 +43,8 @@ oauth2.get('/zitadel/callback', async (req, res, next) => {
       
       } 
       // Correct OAuth2 login
-      req.session.sessionId = await sessionDatabase.loginSession(user.username, req.session.rhid, req.session.gatewayHash);
+      console.log('[OIDC] User logged in', user.username, 'with RHID:', req.session.rhid);
+      await sessionDatabase.authoriseLoginSession(user.username, req.session.rhid || info.state);
       return res.redirect('/user');
     
     });
