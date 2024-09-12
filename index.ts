@@ -40,7 +40,8 @@ declare global {
 const app = express();
 
 const { ENABLE_HTTPS, SESSION_KEY, SESSION_EXPIRE_TIME, CAPTIVE_PORTAL, DISABLE_PORTAL_REDIRECTION,
-   RP_ID, ORIGIN, HOST, MONGO_HOST, OAUTH_ISSUER, OAUTH_URL, OAUTH_TOKEN_URL, OAUTH_USERINFO_URL, OAUTH_CLIENT_ID, OAUTH_SECRET } = process.env;
+   RP_ID, ORIGIN, HOST, MONGO_HOST, OAUTH_ISSUER, OAUTH_URL, OAUTH_TOKEN_URL, OAUTH_USERINFO_URL, OAUTH_MANAGE_URL,
+   OAUTH_CLIENT_ID, OAUTH_SECRET } = process.env;
 
 globalThis.rpID = RP_ID || 'localhost';
 globalThis.mongoHost = MONGO_HOST || 'localhost';
@@ -114,6 +115,10 @@ function ensureAuthenticated(req: express.Request, res: express.Response, next: 
 }
 
 app.use('/user/', ensureAuthenticated);
+// redirect /user/account to OAUTH_MANAGE_URL
+app.use('/user/account', (req, res, next) => {
+  res.redirect(OAUTH_MANAGE_URL || '/user/');
+});
 app.use('/admin/', ensureAuthenticated);
 
 app.use('/', express.static('./public/'));
@@ -134,8 +139,8 @@ mongoose.connect(`mongodb://${mongoHost}:27017/mydb`, {
 // app.use('/api/authentication', webauthn.authentication);
 
 app.use('/api/user-details', ensureAuthenticated, userDetails);
-app.use('/api/registered-users', ensureAuthenticated, authorizeOnlyAdmin, registeredUsers);
-app.post('/api/make-admin', ensureAuthenticated, authorizeOnlyAdmin, makeAdmin)
+// app.use('/api/registered-users', ensureAuthenticated, authorizeOnlyAdmin, registeredUsers);
+// app.post('/api/make-admin', ensureAuthenticated, authorizeOnlyAdmin, makeAdmin)
 app.use('/logout', ensureAuthenticated, logoutRoute);
 
 userDatabase.isAdministratorConfigured().then((admin) => {

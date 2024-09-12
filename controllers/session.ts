@@ -22,14 +22,12 @@ export async function logoutRoute(req: Request, res: Response, next: NextFunctio
 
     req.session.loggedUserId = "";
     req.session.sessionId = undefined;
-    req.logout(next);
-    // req.session.regenerate((err) => {
-    //     if (err)
-    //         res.status(500).send("Internal server error");
-    //     else
-    //         res.redirect(301, '/');
-    // });
-    // res.redirect(301, '/');
+    req.logout((err) => {
+        if (err)
+            res.status(500).send("Internal server error");
+        else
+            res.redirect(301, '/');
+    });
 }
 
 /**

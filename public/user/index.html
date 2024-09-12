@@ -22,6 +22,10 @@
       <button hidden id="btnLogout" onclick="window.location='/logout'">
         Log out
       </button>
+
+      <button hidden id="btnAccount" onclick="window.location='/user/account'">
+        Manage account
+      </button>
       
       <button hidden id="btnAdmin" onclick="window.location='/admin'">
         Admin Panel
@@ -39,6 +43,7 @@
         if (user) {
           document.querySelector('#username').innerHTML = `Your username is ${ user.username }, and you have successfully connected.`;
           document.querySelector('#btnLogout').hidden = false;
+          document.querySelector('#btnAccount').hidden = false;
           document.querySelector('#correct').hidden = false;
           document.querySelector('#btnBack').hidden = true;
           if(user.isAdmin)
