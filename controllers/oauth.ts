@@ -44,8 +44,11 @@ oauth2.get('/zitadel/callback', async (req, res, next) => {
       } 
       // Correct OAuth2 login
       console.log('[OIDC] User logged in', user.username, 'with RHID:', req.session.rhid);
-      await sessionDatabase.authoriseLoginSession(user.username, req.session.rhid || info.state);
-      return res.redirect('/user');
+      const authorised = await sessionDatabase.authoriseLoginSession(user.username, req.session.rhid || info.state);
+      if (authorised)
+        return res.redirect('/user');
+      else
+        return res.redirect('/');
     
     });
 

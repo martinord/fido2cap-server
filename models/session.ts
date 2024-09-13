@@ -97,16 +97,18 @@ class SessionDatabase {
         });
         const document = await session_db.save();
 
-        // wait to confirm authentication for captive portal URL redirection. 5 seconds by default
-        if(CAPTIVE_PORTAL) await sleep((AUTH_DELAY || 5) as number * 1000);
-
         return document.id;
     }
     return "";
   }
 
-  public async authoriseLoginSession ( loggedUserId: string, rhid: string ) {
+  public async authoriseLoginSession ( loggedUserId: string, rhid: string ) : Promise<boolean> {
     await this.sessionModel.updateOne({ rhid: rhid }, { $set: { userId: loggedUserId } });
+
+    // wait to confirm authentication for captive portal URL redirection. 5 seconds by default
+    if(CAPTIVE_PORTAL) await sleep((AUTH_DELAY || 5) as number * 1000);
+
+    return true;
   }
 }
 
