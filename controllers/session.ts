@@ -1,6 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import { sessionDatabase } from '../models/session';
 import { User, userDatabase, RegisteredUser, AdminUser } from '../models/user';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const { CAPTIVE_PORTAL} = process.env;
 
 /**
  * Session authorization Middleware
@@ -25,8 +30,13 @@ export async function logoutRoute(req: Request, res: Response, next: NextFunctio
     req.logout((err) => {
         if (err)
             res.status(500).send("Internal server error");
-        else
-            res.redirect(301, '/');
+        else{
+            if(CAPTIVE_PORTAL)
+                res.redirect(301, 'http://status.client/opennds_deny/');
+            else
+                res.redirect(301, '/');
+        }
+           
     });
 }
 
