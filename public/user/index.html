@@ -1,38 +1,38 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="/almond.lite.min.css" />
     <link rel="stylesheet" href="/styles.css" />
-    <title>User Panel</title>
+    <title>Panel de Usuario</title>
   </head>
   <body>
     <div class="container">
       
       <div id="correct" hidden="true">
-        <h2>Great! You are now connected to the Internet</h2>
+        <h2>¡Genial! Ahora estás conectado a Internet</h2>
         <div>
-          <img src="/img/correct.webp" alt="Everything is correct!" width="200">
+          <img src="/img/correct.webp" alt="¡Todo está correcto!" width="200">
         </div>
       </div>
       
-      <p id="username">Oops! You need to authenticate</p>
+      <p id="username">¡Ups! Necesitas verificar tu identidad</p>
       
       <button hidden id="btnLogout" onclick="window.location='/logout'">
-        Log out
+        Cerrar sesión
       </button>
 
       <button hidden id="btnAccount" onclick="window.location='/user/account'">
-        Manage account
+        Gestionar cuenta
       </button>
       
       <button hidden id="btnAdmin" onclick="window.location='/admin'">
-        Admin Panel
+        Panel de administración
       </button>
       
       <div id="btnBack" style="margin: 10px;">
-        <a href="/">⬅️&nbsp;Go back to the start</a>
+        <a href="/">⬅️&nbsp;Volver al inicio</a>
       </div>
 
       <p class="systemError"></p>
@@ -41,7 +41,7 @@
       fetch('/api/user-details').then( async function(login) {
         let user = await login.json();
         if (user) {
-          document.querySelector('#username').innerHTML = `Your username is ${ user.username }, and you have successfully connected.`;
+          document.querySelector('#username').innerHTML = `Tu nombre de usuario es ${ user.username }, y te has conectado correctamente.`;
           document.querySelector('#btnLogout').hidden = false;
           document.querySelector('#btnAccount').hidden = false;
           document.querySelector('#correct').hidden = false;
