@@ -54,12 +54,6 @@
         <img src="img/error.png" alt="Persona confundida" width="200">
       </div>
 
-      <p id="errorRedirect" class="error"></p>
-      
-      <button id="btnRedirectChrome" hidden="true" style="margin-top: 1rem; background-color: gray;">
-        ↗️&nbsp;Abrir en otro navegador
-      </button>
-
       <button id="btnReload" hidden="true" style="margin-top: 1rem;" onclick="window.location.reload();">
         🔃&nbsp;Intentar de nuevo
       </button>
@@ -73,7 +67,6 @@
       const elemSuccess = document.querySelector('#authSuccess');
       const elemAuthInfo = document.querySelector('#authInfo');
       const elemErrorDetail = document.querySelector('#errorDetail');
-      const elemErrorRedirect = document.querySelector('#errorRedirect');
       const elemErrorTitle = document.querySelector('#errorTitle');
       const elemGif = document.querySelector('#authGif');
       const elemUser = document.querySelector('#user');
@@ -82,7 +75,6 @@
       const elemUserSection = document.querySelector('#userSection');
       const elemAuthentication = document.querySelector('#authentication');
       const elemUsernameError = document.querySelector('#usernameError');
-      const elemImgError = document.querySelector('#imgError');
 
       function showError(title, message) {
         elemErrorTitle.innerHTML = title || "Operación cancelada";
@@ -105,12 +97,7 @@
           redirection_url = window.location.href;
         }
 
-        document.querySelector('.controls').style.display = 'none';
-        document.querySelector('#imgError').hidden = false;
-        elemErrorRedirect.innerHTML = "Este navegador en " + os + " puede no ser compatible con Llaves de acceso. Copia la URL en otro navegador o prueba el botón de abajo. 👇";
-
-        document.querySelector('#btnRedirectChrome').hidden = false;
-        document.querySelector('#btnRedirectChrome').addEventListener('click', async () => {
+        document.querySelector('#btnUsername').addEventListener('click', async () => {
           window.open(redirection_url, '_blank');
         });
       }
