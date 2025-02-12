@@ -18,16 +18,6 @@
           
           <img src="img/people.webp" alt="A person holding a key" width="200">
           
-          <!-- <p>Enter your <strong>username</strong> and press continue</p>
-          
-          <div id="user">
-            <input id="username" type="text">
-          </div>
-          
-          <div id="discoverable" style="margin: 2rem;">
-            <label><input id="nonDiscoverable" type="checkbox"> 👌&nbsp;I don't need a username</label>
-          </div> -->
-          
           <br>
 
           <button id="btnUsername">
@@ -39,7 +29,7 @@
         
         <section id="authentication" hidden>
           
-          <h2>Use your Security Key</h2>
+          <h2>Verifying your identity ...</h2>
           
           <img src="img/security-key.webp" alt="A person holding a key" width="200">
           
@@ -54,11 +44,6 @@
           
           <img id="authGif" class="loading" src="/loading.gif" alt="Authenticating..." width="200">
           <p id="authInfo"></p>
-          
-          <div id="information" class="information">
-            <p>Use your <strong>Security Key</strong> to log in with one click.</p>
-            <p><a style="padding-right: 5px;" href="/about">🔍&nbsp;Learn more</a> <a href="/">⬅️&nbsp;Go back</a></p>
-          </div>
         
         </section>
       </div>
@@ -91,7 +76,7 @@
       const elemErrorRedirect = document.querySelector('#errorRedirect');
       const elemErrorTitle = document.querySelector('#errorTitle');
       const elemGif = document.querySelector('#authGif');
-      const elemUsername = document.querySelector('#username');
+      // const elemUsername = document.querySelector('#username');
       const elemUser = document.querySelector('#user');
       const elemDiscoverable = document.querySelector('#discoverable');
       const elemNonDiscoverable = document.querySelector('#nonDiscoverable');
@@ -148,115 +133,27 @@
       if (!SimpleWebAuthnBrowser.browserSupportsWebAuthn()) showRedirect()
       else {
 
-        /**
-         * Get username
-         */
-        function getUsername() {
-          if(elemUsername.value != '' || elemNonDiscoverable.checked) {
-            elemUserSection.hidden = true;
-            elemAuthentication.hidden = false;
-            return true;
-          } else {
-            elemUsernameError.innerHTML = "Please, enter your username or check the box."
-            return false;
-          }
-        }
-
         document.querySelector('#btnUsername').addEventListener('click', authenticationCall);
         document.querySelector('#btnAuthBegin').addEventListener('click', authenticationCall);
 
-        document.querySelector('#username').addEventListener('keydown', (event) => {
-          if (event.keyCode === 13) authenticationCall(); // user presses enter
-        });
-        document.querySelector('#username').value = localStorage.getItem('username');
 
         /**
-         * Display non-discoverable options
-         */
-        document.querySelector('#nonDiscoverable').addEventListener('click', async () => {
-          elemUser.style = elemNonDiscoverable.checked? "display: none;" : "display: inline;";
-        });
-
-         /**
-         * Authentication
+         * Authentication OIDC
          */
         async function authenticationCall () {
 
-          window.location.href = '/auth/zitadel';
-          return;
+          // OIDC Authentication flow
 
-          // Check if username is valid
-          if(!getUsername()) return;
-
-          // Reset success/error messages
           elemSuccess.innerHTML = '';
           elemErrorTitle.innerHTML = '';
           elemErrorDetail.innerHTML = '';
           elemGif.hidden = false;
-          elemAuthInfo.innerHTML = 'Wait and follow the instructions of your browser.';
+          elemUserSection.hidden = true;
+          elemAuthentication.hidden = false;
+          elemAuthInfo.innerHTML = 'Waiting for the login page ...';
           elemButton.hidden = true;
 
-          const resp = await fetch('/api/authentication?' + new URLSearchParams({ 
-            'username' : elemUsername.value.toLowerCase().trim(),
-            'nonDiscoverable' : !elemNonDiscoverable.checked 
-          }));
-
-          localStorage.setItem('username', elemUsername.value.toLowerCase().trim());
-
-          let asseResp;
-          try {
-            const opts = await resp.json();
-            asseResp = await SimpleWebAuthnBrowser.startAuthentication(opts);
-          } catch (error) {
-            let os = new UAParser(window.navigator.userAgent).getOS().name;
-            
-            if (error.name == "UnknownError" || error.name == "NotReadableError" || error.name == "InvalidStateError") {
-              showError("Try again", "The key you have registered has not connected correctly. Try again, or try another key!");
-            } else if (error.name == "SecurityError") {
-              showRedirect();
-            } else if (error.name == "NotAllowedError" && error.message.indexOf("failed") !== -1 && (os == "iOS" || os == "macOS")) {
-              // Show error in case of macOS and iOS with specific error detail
-              showRedirect();
-            } else {
-              showError("Operation cancelled", "Try again using the button 👇");
-            }
-            throw new Error(error);
-          }
-
-          // Wait for verification response
-          elemAuthInfo.innerHTML = 'Verifying your identity ...';
-          elemButton.hidden = true;
-          elemInfo.hidden = true;
-          elemDiscoverable.hidden = true;
-          elemUser.style = "display: none;";
-          
-          const verificationResp = await fetch('/api/authentication', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(asseResp),
-          });
-
-          // Show elements
-          elemAuthInfo.innerHTML = '';
-          elemGif.hidden = true;
-          elemButton.hidden = false;
-          elemInfo.hidden = false;
-          elemDiscoverable.hidden = false;
-
-          try {
-            const verificationJSON = await verificationResp.json();
-
-            if (verificationJSON && verificationJSON.verified) {
-              elemSuccess.innerHTML = `User authenticated!`;
-              window.location = '/user/';
-            } else {
-              showError("We couldn't verify your identity", "Something might be failing or this key is no longer registered. Make sure not to move the key during the process!");
-            }
-          } catch (error) {
-            showError("We couldn't verify your identity", "Something might be failing or this key is no longer registered. Make sure not to move the key during the process!");
-          }
+          window.location.href = '/auth/zitadel';
           
         };
       }
